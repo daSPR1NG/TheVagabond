@@ -1,75 +1,76 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerDataManager : MonoBehaviour
+namespace Khynan_Coding
 {
-    [Header("PLAYER")]
-    private Transform playerCharacterTransform;
-
-    [Space]
-    [Header("PLAYER INFORMATIONS")]
-    public Vector3 playerPosition;
-
-    #region Singleton
-    public static PlayerDataManager Instance;
-
-    private void Awake()
+    public class PlayerDataManager : MonoBehaviour
     {
-        if (Instance != null && Instance != this)
+        [Header("PLAYER")]
+        private Transform playerCharacterTransform;
+
+        [Space]
+        [Header("PLAYER INFORMATIONS")]
+        public Vector3 playerPosition;
+
+        #region Singleton
+        public static PlayerDataManager Instance;
+
+        private void Awake()
         {
-            Destroy(gameObject);
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+                SetPlayerCharacterTransform();
+            }
         }
-        else
+        #endregion
+
+        #region Player position
+        public void SavePlayerPosition()
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            playerPosition = GetCharacterPosition(playerCharacterTransform);
+            //Save it with PlayerPrefs
+        }
+
+        public Vector3 GetCharacterPosition(Transform observedTransform)
+        {
+            if (playerPosition == Vector3.zero)
+            {
+                return observedTransform.position;
+            }
+
+            return playerPosition;
+        }
+
+        public void SetCharacterPosition(Transform observedTransform, Vector3 newPos)
+        {
             SetPlayerCharacterTransform();
+            observedTransform.position = newPos;
         }
-    }
-    #endregion
+        #endregion
 
-    #region Player position
-    public void SavePlayerPosition()
-    {
-        playerPosition = GetCharacterPosition(playerCharacterTransform);
-        //Save it with PlayerPrefs
-    }
-
-    public Vector3 GetCharacterPosition(Transform observedTransform)
-    {
-        if(playerPosition == Vector3.zero)
+        public Transform GetPlayerCharacterTransform()
         {
-            return observedTransform.position;
+            return playerCharacterTransform;
         }
 
-        return playerPosition;
-    }
-
-    public void SetCharacterPosition(Transform observedTransform, Vector3 newPos)
-    {
-        SetPlayerCharacterTransform();
-        observedTransform.position = newPos;
-    }
-    #endregion
-
-    public Transform GetPlayerCharacterTransform()
-    {
-        return playerCharacterTransform;
-    }
-
-    private void SetPlayerCharacterTransform()
-    {
-        playerCharacterTransform = transform;
-    }
-
-    public bool PlayerCharacterIsActive()
-    {
-        if (playerCharacterTransform.gameObject.activeInHierarchy)
+        private void SetPlayerCharacterTransform()
         {
-            return true;
+            playerCharacterTransform = transform;
         }
 
-        return false;
+        public bool PlayerCharacterIsActive()
+        {
+            if (playerCharacterTransform.gameObject.activeInHierarchy)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

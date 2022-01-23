@@ -3,134 +3,137 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-[RequireComponent(typeof(OutlineModule))]
-public class CollectableRessource : MonoBehaviour, IInteractive, IDetectable
+namespace Khynan_Coding
 {
-    [Header("INTERACTION SETTINGS")]
-    public Transform interactingObject;
-    public float minimumDistanceToInteract = 1.25f;
-    public string interactionName = "[Type HERE]";
-    public bool hasAnInteractionOccurring = false; //public to debug
-
-    [Header("RESSOURCE SETTINGS")]
-    public RessourceType ressourceType = RessourceType.Unassigned;
-    public float ressourceAmount = 1000f;
-    public float collectionDuration = 5f;
-    float currentCollectionTimerValue;
-
-    [Header("APPEARANCE SETTINGS")]
-    public List<Color> appearances;
-
-    private Coroutine interactionCoroutine;
-
-    #region Components
-    private OutlineModule OutlineComponent => GetComponent<OutlineModule>();
-    #endregion
-
-    private void Start()
+    [RequireComponent(typeof(OutlineModule))]
+    public class CollectableRessource : MonoBehaviour, IInteractive, IDetectable
     {
-        currentCollectionTimerValue = collectionDuration;
-    }
+        [Header("INTERACTION SETTINGS")]
+        public Transform interactingObject;
+        public float minimumDistanceToInteract = 1.25f;
+        public string interactionName = "[Type HERE]";
+        public bool hasAnInteractionOccurring = false; //public to debug
 
-    public virtual void ExitInteraction()
-    {
-        interactingObject = null;
+        [Header("RESSOURCE SETTINGS")]
+        public RessourceType ressourceType = RessourceType.Unassigned;
+        public float ressourceAmount = 1000f;
+        public float collectionDuration = 5f;
+        float currentCollectionTimerValue;
 
-        hasAnInteractionOccurring = false;
+        [Header("APPEARANCE SETTINGS")]
+        public List<Color> appearances;
 
-        if (interactionCoroutine is not null) 
-        { 
-            StopCoroutine(interactionCoroutine); 
-        }
-    }
+        private Coroutine interactionCoroutine;
 
-    public virtual void Interaction(Transform _interactingObject)
-    {
-        interactingObject = _interactingObject;
-        collectionDuration = currentCollectionTimerValue;
+        #region Components
+        private OutlineModule OutlineComponent => GetComponent<OutlineModule>();
+        #endregion
 
-        if (ressourceType != RessourceType.Unassigned && ressourceAmount != 0)
+        private void Start()
         {
-            interactionCoroutine = StartCoroutine(InteractionCoroutine());
+            currentCollectionTimerValue = collectionDuration;
         }
 
-        UtilityClass.DebugMessage("PIPOUPIPOU");
-    }
-
-    IEnumerator InteractionCoroutine()
-    {
-        //Change the sprite to a damaged one to see the advancement.
-        hasAnInteractionOccurring = true;
-
-        for (int i = 0; i < appearances.Count; i++)
+        public virtual void ExitInteraction()
         {
-            yield return new WaitForSeconds(collectionDuration / appearances.Count);
-            //currentCollectionTimerValue -= (collectionDuration / appearances.Count);
+            interactingObject = null;
 
-            UpdateAppearance(i);
+            hasAnInteractionOccurring = false;
+
+            if (interactionCoroutine is not null)
+            {
+                StopCoroutine(interactionCoroutine);
+            }
         }
 
-        currentCollectionTimerValue = 0;
-
-        yield return new WaitForEndOfFrame();
-
-        DeliverRessourcesToTheInteractingActor();
-    }
-
-    public float GetCurrentInterationTimer()
-    {
-        return currentCollectionTimerValue;
-    }
-
-    private void UpdateAppearance(int index)
-    {
-        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
-        meshRenderer.material.color = appearances [ index ];
-
-        Debug.Log("Change appearance :" + " APPERANCE N° " + index);
-    }
-
-    private void DeliverRessourcesToTheInteractingActor()
-    {
-        if (interactingObject is not null)
+        public virtual void Interaction(Transform _interactingObject)
         {
-            RessourcesHandler ressourcesHandlerRef = interactingObject.GetComponent<RessourcesHandler>();
-            ressourcesHandlerRef.GetThisRessource(ressourceType).AddToCurrentValue(ressourceAmount);
+            interactingObject = _interactingObject;
+            collectionDuration = currentCollectionTimerValue;
 
-            Debug.Log("Ressources have been given to actor.");
+            if (ressourceType != RessourceType.Unassigned && ressourceAmount != 0)
+            {
+                interactionCoroutine = StartCoroutine(InteractionCoroutine());
+            }
 
-            interactingObject.GetComponent<InteractionHandler>().ResetInteractingState();
-            ExitInteraction();
-
-            DestroyOnCollectionCompleted();
+            Helper.DebugMessage("PIPOUPIPOU");
         }
-    }
 
-    private void DestroyOnCollectionCompleted()
-    {
-        Debug.Log("Destroy, interaction has been completed.");
-        //Call Destruction Animation or change the sprite.
-        //Play the SFX.
-    }
-
-    #region Cursor Detection
-    public void OnMouseEnter()
-    {
-        IDetectable.IDetectableExtension.SetCursorAppearanceOnDetection(CursorType.Ressource, OutlineComponent, true, transform.name + " has been detected.");
-    }
-
-    public void OnMouseExit()
-    {
-        IDetectable.IDetectableExtension.SetCursorAppearanceOnDetection(CursorType.Default, OutlineComponent, false, transform.name + " is no longer detected.");
-    }
-
-    private void OnMouseOver()
-    {
-        if (OutlineComponent.enabled 
-            && (GameManager.Instance.GameIsPaused() || GameManager.Instance.IsInCombat()))
+        IEnumerator InteractionCoroutine()
         {
-            OutlineComponent.enabled = false;
+            //Change the sprite to a damaged one to see the advancement.
+            hasAnInteractionOccurring = true;
+
+            for (int i = 0; i < appearances.Count; i++)
+            {
+                yield return new WaitForSeconds(collectionDuration / appearances.Count);
+                //currentCollectionTimerValue -= (collectionDuration / appearances.Count);
+
+                UpdateAppearance(i);
+            }
+
+            currentCollectionTimerValue = 0;
+
+            yield return new WaitForEndOfFrame();
+
+            DeliverRessourcesToTheInteractingActor();
         }
+
+        public float GetCurrentInterationTimer()
+        {
+            return currentCollectionTimerValue;
+        }
+
+        private void UpdateAppearance(int index)
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            meshRenderer.material.color = appearances[index];
+
+            Debug.Log("Change appearance :" + " APPERANCE N° " + index);
+        }
+
+        private void DeliverRessourcesToTheInteractingActor()
+        {
+            if (interactingObject is not null)
+            {
+                RessourcesHandler ressourcesHandlerRef = interactingObject.GetComponent<RessourcesHandler>();
+                ressourcesHandlerRef.GetThisRessource(ressourceType).AddToCurrentValue(ressourceAmount);
+
+                Debug.Log("Ressources have been given to actor.");
+
+                interactingObject.GetComponent<Player_InteractionHandler>().ResetInteractingState();
+                ExitInteraction();
+
+                DestroyOnCollectionCompleted();
+            }
+        }
+
+        private void DestroyOnCollectionCompleted()
+        {
+            Debug.Log("Destroy, interaction has been completed.");
+            //Call Destruction Animation or change the sprite.
+            //Play the SFX.
+        }
+
+        #region Cursor Detection
+        public void OnMouseEnter()
+        {
+            IDetectable.IDetectableExtension.SetCursorAppearanceOnDetection(CursorType.Ressource, OutlineComponent, true, transform.name + " has been detected.");
+        }
+
+        public void OnMouseExit()
+        {
+            IDetectable.IDetectableExtension.SetCursorAppearanceOnDetection(CursorType.Default, OutlineComponent, false, transform.name + " is no longer detected.");
+        }
+
+        private void OnMouseOver()
+        {
+            if (OutlineComponent.enabled
+                && (GameManager.Instance.GameIsPaused()))
+            {
+                OutlineComponent.enabled = false;
+            }
+        }
+        #endregion
     }
-    #endregion
 }

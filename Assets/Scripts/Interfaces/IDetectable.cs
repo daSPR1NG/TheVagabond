@@ -1,21 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public interface IDetectable
+namespace Khynan_Coding
 {
-    public abstract void OnMouseEnter();
-    public abstract void OnMouseExit();
-
-    public static class IDetectableExtension
+    public interface IDetectable
     {
-        public static void SetCursorAppearanceOnDetection(CursorType cursorType, OutlineModule outlineComponent, bool isOutlineEnabled, string debugMessage)
+        public abstract void OnMouseEnter();
+        public abstract void OnMouseExit();
+
+        public static class IDetectableExtension
         {
-            CursorController.Instance.SetCursorAppearance(cursorType);
+            public static void SetCursorAppearanceOnDetection(CursorType cursorType, OutlineModule outlineComponent, bool isOutlineEnabled, string debugMessage)
+            {
+                CursorController.Instance.SetCursorAppearance(cursorType);
 
-            outlineComponent.enabled = isOutlineEnabled;
+                outlineComponent.enabled = isOutlineEnabled;
 
-            UtilityClass.DebugMessage(debugMessage);
+                Helper.DebugMessage(debugMessage);
+            }
         }
     }
 }

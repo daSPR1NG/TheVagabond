@@ -1,25 +1,28 @@
 using UnityEngine;
 
-public interface IInteractive
+namespace Khynan_Coding
 {
-    public abstract void Interaction(Transform _interactingObject);
-    public abstract void ExitInteraction();
-
-    public static class IInteractiveExtension
+    public interface IInteractive
     {
-        public static void ThrowTryingInteractionMessage(Transform target)
-        {
-            UtilityClass.DebugMessage("STATUS <TRYING> " + "Interaction with : " + target.name);
-        }
+        public abstract void Interaction(Transform _interactingObject);
+        public abstract void ExitInteraction();
 
-        public static void ThrowInteractionMessage(Transform target)
+        public static class IInteractiveExtension
         {
-            UtilityClass.DebugMessage("STATUS <BEGIN> " + "Interaction with : " + target.name);
-        }
+            public static void ThrowTryingInteractionMessage(Transform target)
+            {
+                Helper.DebugMessage("STATUS <TRYING> " + "Interaction with : " + target.name);
+            }
 
-        public static void ThrowInteractionExitMessage()
-        {
-            UtilityClass.DebugMessage("STATUS <END> " + "Interaction exited");
+            public static void ThrowInteractionMessage(Transform target)
+            {
+                Helper.DebugMessage("STATUS <BEGIN> " + "Interaction with : " + target.name);
+            }
+
+            public static void ThrowInteractionExitMessage()
+            {
+                Helper.DebugMessage("STATUS <END> " + "Interaction exited");
+            }
         }
     }
 }

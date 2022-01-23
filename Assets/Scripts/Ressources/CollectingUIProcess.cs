@@ -2,73 +2,77 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CollectingUIProcess : MonoBehaviour
+namespace Khynan_Coding
 {
-    public Transform content;
-
-    [Space] [Header("UI COMPONENTS")]
-    public TextMeshProUGUI timerText;
-    public TextMeshProUGUI actionText;
-    public Image filledImage;
-
-    private float currentTimerValue;
-    private float maxTimer;
-
-    private void OnEnable()
+    public class CollectingUIProcess : MonoBehaviour
     {
-        InteractionHandler.OnInteraction += SetUIDatas;
-        InteractionHandler.OnEndOfInteraction += ResetUIs;
-    }
+        public Transform content;
 
-    private void OnDisable()
-    {
-        InteractionHandler.OnInteraction -= SetUIDatas;
-        InteractionHandler.OnEndOfInteraction -= ResetUIs;
-    }
+        [Space]
+        [Header("UI COMPONENTS")]
+        public TextMeshProUGUI timerText;
+        public TextMeshProUGUI actionText;
+        public Image filledImage;
 
-    private void Update()
-    {
-        if (content.gameObject.activeInHierarchy) ProcessTimer();
-    }
+        private float currentTimerValue;
+        private float maxTimer;
 
-    public void SetUIDatas(float currentTimerValue, float maxDuration, string action)
-    {
-        content.gameObject.SetActive(true);
+        private void OnEnable()
+        {
+            Player_InteractionHandler.OnInteraction += SetUIDatas;
+            Player_InteractionHandler.OnEndOfInteraction += ResetUIs;
+        }
 
-        //Storing passed datas
-        maxTimer = maxDuration;
-        this.currentTimerValue = currentTimerValue;
+        private void OnDisable()
+        {
+            Player_InteractionHandler.OnInteraction -= SetUIDatas;
+            Player_InteractionHandler.OnEndOfInteraction -= ResetUIs;
+        }
 
-        timerText.text = currentTimerValue.ToString("0.00");
+        private void Update()
+        {
+            if (content.gameObject.activeInHierarchy) ProcessTimer();
+        }
 
-        filledImage.fillAmount = currentTimerValue / maxDuration;
+        public void SetUIDatas(float currentTimerValue, float maxDuration, string action)
+        {
+            content.gameObject.SetActive(true);
 
-        actionText.text = action;
-    }
+            //Storing passed datas
+            maxTimer = maxDuration;
+            this.currentTimerValue = currentTimerValue;
 
-    private void SetUIAtRuntime(float timerValue)
-    {
-        if (timerValue > 1) timerText.text = timerValue.ToString("0");
+            timerText.text = currentTimerValue.ToString("0.00");
 
-        if (timerValue <= 1) timerText.text = timerValue.ToString("0.0");
+            filledImage.fillAmount = currentTimerValue / maxDuration;
 
-        filledImage.fillAmount = timerValue / maxTimer;
-    }
+            actionText.text = action;
+        }
 
-    private void ResetUIs()
-    {
-        maxTimer = 0;
-        currentTimerValue = 0;
+        private void SetUIAtRuntime(float timerValue)
+        {
+            if (timerValue > 1) timerText.text = timerValue.ToString("0");
 
-        content.gameObject.SetActive(false);
-    }
+            if (timerValue <= 1) timerText.text = timerValue.ToString("0.0");
 
-    private void ProcessTimer()
-    {
-        currentTimerValue -= Time.deltaTime;
+            filledImage.fillAmount = timerValue / maxTimer;
+        }
 
-        SetUIAtRuntime(currentTimerValue);
+        private void ResetUIs()
+        {
+            maxTimer = 0;
+            currentTimerValue = 0;
 
-        if (currentTimerValue <= 0) content.gameObject.SetActive(false);
+            content.gameObject.SetActive(false);
+        }
+
+        private void ProcessTimer()
+        {
+            currentTimerValue -= Time.deltaTime;
+
+            SetUIAtRuntime(currentTimerValue);
+
+            if (currentTimerValue <= 0) content.gameObject.SetActive(false);
+        }
     }
 }

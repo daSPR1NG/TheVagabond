@@ -1,61 +1,65 @@
 using UnityEngine;
 
-[System.Serializable]
-public class Ressource
+namespace Khynan_Coding
 {
-    [Header("GENERAL SETTINGS")]
-    public string ressourceName;
-    public RessourceType ressourceType;
+    [System.Serializable]
+    public class Ressource
+    {
+        [Header("GENERAL SETTINGS")]
+        public string ressourceName;
+        public RessourceType ressourceType;
 
-    [Space]
+        [Space]
 
-    [Header("VALUES")]
-    public float startingValue = 0f;
-    private float currentValue;
-    public float CurrentValue { 
-        get => currentValue; 
-        set
+        [Header("VALUES")]
+        public float startingValue = 0f;
+        private float currentValue;
+        public float CurrentValue
         {
-            if (value <= 0)
+            get => currentValue;
+            set
             {
-                currentValue = 0;
+                if (value <= 0)
+                {
+                    currentValue = 0;
+                }
+                else if (maxValue != 0 && value >= maxValue)
+                {
+                    currentValue = maxValue;
+                }
+                else currentValue = value;
             }
-            else if (maxValue != 0 && value >= maxValue) 
-            {
-                currentValue = maxValue;
-            }
-            else currentValue = value;
         }
-    }
-    public float maxValue;
+        public float maxValue;
 
-    public delegate void RessourceValueHandler(RessourceType ressourceType);
-    public event RessourceValueHandler OnRessourceValueChanged;
+        public delegate void RessourceValueHandler(RessourceType ressourceType);
+        public event RessourceValueHandler OnRessourceValueChanged;
 
-    public void InitValue(float startingValue)
-    {
-        this.startingValue = startingValue;
+        public void InitValue(float startingValue)
+        {
+            this.startingValue = startingValue;
 
-        OnRessourceValueChanged?.Invoke(ressourceType);
-    }
+            OnRessourceValueChanged?.Invoke(ressourceType);
+        }
 
-    public void AddToCurrentValue(float valueToAdd)
-    {
-        if (CurrentValue == 0 && maxValue != 0 && CurrentValue >= maxValue) return;
+        public void AddToCurrentValue(float valueToAdd)
+        {
+            if (CurrentValue == 0 && maxValue != 0 && CurrentValue >= maxValue) return;
 
-        CurrentValue += valueToAdd;
+            CurrentValue += valueToAdd;
 
-        OnRessourceValueChanged?.Invoke(ressourceType);
-        RessourcesHandler.Instance.TriggerUIFeedbackOnRessourceCollectionOrLoss(ressourceType);
-    }
+            OnRessourceValueChanged?.Invoke(ressourceType);
+            RessourcesHandler.Instance.TriggerUIFeedbackOnRessourceCollectionOrLoss(ressourceType);
+        }
 
-    public void RemoveToCurrentValue(float valueToRemove)
-    {
-        if (CurrentValue == 0) return;
+        public void RemoveToCurrentValue(float valueToRemove)
+        {
+            if (CurrentValue == 0) return;
 
-        CurrentValue -= valueToRemove;
+            CurrentValue -= valueToRemove;
 
-        OnRessourceValueChanged?.Invoke(ressourceType);
-        RessourcesHandler.Instance.TriggerUIFeedbackOnRessourceCollectionOrLoss(ressourceType);
+            OnRessourceValueChanged?.Invoke(ressourceType);
+            RessourcesHandler.Instance.TriggerUIFeedbackOnRessourceCollectionOrLoss(ressourceType);
+        }
     }
 }
