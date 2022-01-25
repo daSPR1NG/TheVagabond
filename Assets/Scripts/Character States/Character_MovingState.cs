@@ -4,60 +4,50 @@ namespace Khynan_Coding
 {
     public class Character_MovingState : BasicState
     {
+        InteractionHandler interactionHandler;
+        Player_MovementController character_MovementHandler;
+
         public override void EnterState(StateManager stateManager)
         {
-            Helper.DebugMessage("Entering <MOVING> state", stateManager.GetComponent<Transform>());
+            interactionHandler = stateManager.InteractionHandler;
+            character_MovementHandler = stateManager.GetComponent<Player_MovementController>();
+
             stateManager.CharacterIsMoving = true;
+            stateManager.CharacterAnimationController.SetAnimationBoolean(
+                stateManager.CharacterAnimationController.Animator, "IsMoving", stateManager.CharacterIsMoving);
+            
+
+            Helper.DebugMessage("Entering <MOVING> state", stateManager.transform); 
         }
 
         public override void ExitState(StateManager stateManager)
         {
-            Helper.DebugMessage("Exiting <MOVING> state", stateManager.GetComponent<Transform>());
-
             stateManager.CharacterIsMoving = false;
+            stateManager.CharacterAnimationController.SetAnimationBoolean(
+                stateManager.CharacterAnimationController.Animator, "IsMoving", stateManager.CharacterIsMoving);
+
+            Helper.DebugMessage("Exiting <MOVING> state", stateManager.transform);
         }
 
         public override void ProcessState(StateManager stateManager)
         {
-            Player_InteractionHandler cursorDetection = stateManager.GetComponent<Player_InteractionHandler>();
-            Player_MovementController character_MovementHandler = stateManager.GetComponent<Player_MovementController>();
-
-            if (character_MovementHandler.DirectionToMove == Vector3.zero && !cursorDetection.HasATarget)
+            if (character_MovementHandler && character_MovementHandler.DirectionToMove == Vector3.zero 
+                && interactionHandler && !interactionHandler.HasATarget)
             {
                 Helper.DebugMessage("Destination Reached !");
                 stateManager.SwitchState(stateManager.IdleState);
+                return;
             }
-            else if (character_MovementHandler.DirectionToMove != Vector3.zero)
-            {
-                UpdateTransformRotation(character_MovementHandler, stateManager.transform);
-            }
+
+            HandleCharacterRotation(stateManager.NavMeshAgent, stateManager.transform);
         }
 
-        #region Updating character elements while moving - Rotation and moving animation
-        //private void UpdateCharacterMovementAnimation(NavMeshAgent agent, Animator animator, string animationFloatName, float smoothTime)
-        //{
-        //    if (!agent.hasPath)
-        //    {
-        //        animator.SetFloat(animationFloatName, 0, smoothTime, Time.deltaTime);
-        //        return;
-        //    }
-
-        //    float moveSpeed = agent.velocity.sqrMagnitude / agent.speed;
-        //    animator.SetFloat(animationFloatName, moveSpeed, smoothTime, Time.deltaTime);
-        //}
-
-        private void UpdateTransformRotation(Player_MovementController stateManager, Transform _transform)
+        public void HandleCharacterRotation(UnityEngine.AI.NavMeshAgent navMeshAgent, Transform transform)
         {
-            //This operation/conversion helps us rotate the character in the right direction relative to the movement direction and the camera's orientation.
-            Quaternion targetRotation = Quaternion.LookRotation(
-                (Helper.GetMainCameraForwardDirection(0) * stateManager.DirectionToMove.z +
-                Helper.GetMainCameraRightDirection(0) * stateManager.DirectionToMove.x).normalized, Vector3.up);
-
-            //This operation/conversion helps us rotate the character in the right direction relative to his movement.
-            //Quaternion targetRotation = Quaternion.LookRotation(stateManager.DirectionToMove, Vector3.up.normalized);
-
-            _transform.localRotation = Quaternion.RotateTowards(_transform.rotation, targetRotation, stateManager.RotationSpeed * Time.fixedDeltaTime);
+            if (navMeshAgent.velocity.sqrMagnitude > Mathf.Epsilon)
+            {
+                transform.rotation = Quaternion.LookRotation(navMeshAgent.velocity.normalized);
+            }
         }
-        #endregion
     }
 }

@@ -96,12 +96,12 @@ namespace Khynan_Coding
         {
             if (interactingObject is not null)
             {
-                RessourcesHandler ressourcesHandlerRef = interactingObject.GetComponent<RessourcesHandler>();
+                RessourcesManager ressourcesHandlerRef = interactingObject.GetComponent<RessourcesManager>();
                 ressourcesHandlerRef.GetThisRessource(ressourceType).AddToCurrentValue(ressourceAmount);
 
                 Debug.Log("Ressources have been given to actor.");
 
-                interactingObject.GetComponent<Player_InteractionHandler>().ResetInteractingState();
+                interactingObject.GetComponent<InteractionHandler>().ResetInteractionState();
                 ExitInteraction();
 
                 DestroyOnCollectionCompleted();

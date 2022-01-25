@@ -8,12 +8,12 @@ namespace Khynan_Coding
         {
             //Play interaction animation 
             //Launch interaction function from the interacted object
-            Helper.DebugMessage("Entering <INTERACTION> state", stateManager.GetComponent<Transform>());
+            Helper.DebugMessage("Entering <INTERACTION> state", stateManager.transform);
         }
 
         public override void ExitState(StateManager stateManager)
         {
-            Helper.DebugMessage("Exiting <INTERACTION> state", stateManager.GetComponent<Transform>());
+            Helper.DebugMessage("Exiting <INTERACTION> state", stateManager.transform);
         }
 
         public override void ProcessState(StateManager stateManager)

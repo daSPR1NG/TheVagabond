@@ -31,7 +31,7 @@ namespace Khynan_Coding
 
         public void PlayFeedbackAnimation()
         {
-            if (Helper.IsAnimationPlaying(AnimatorComponent, "Anim_PlayerRessourceUI_Feedback"))
+            if (Helper.IsThisAnimationPlaying(AnimatorComponent, "Anim_PlayerRessourceUI_Feedback"))
             {
                 AnimatorComponent.ResetTrigger("TriggerEvent");
                 Debug.Log("Reset Animation");

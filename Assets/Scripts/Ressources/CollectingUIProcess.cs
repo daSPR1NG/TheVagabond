@@ -19,14 +19,14 @@ namespace Khynan_Coding
 
         private void OnEnable()
         {
-            Player_InteractionHandler.OnInteraction += SetUIDatas;
-            Player_InteractionHandler.OnEndOfInteraction += ResetUIs;
+            InteractionHandler.OnInteraction += SetUIDatas;
+            InteractionHandler.OnEndOfInteraction += ResetUIs;
         }
 
         private void OnDisable()
         {
-            Player_InteractionHandler.OnInteraction -= SetUIDatas;
-            Player_InteractionHandler.OnEndOfInteraction -= ResetUIs;
+            InteractionHandler.OnInteraction -= SetUIDatas;
+            InteractionHandler.OnEndOfInteraction -= ResetUIs;
         }
 
         private void Update()

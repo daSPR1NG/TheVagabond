@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
@@ -48,62 +49,68 @@ namespace Khynan_Coding
         #endregion
 
         #region Left and right click pressure check
-        public static bool LeftClickIsPressed()
+        public static bool IsLeftClickPressed()
         {
             if (Input.GetMouseButtonDown(0))
             {
                 return true;
             }
-            else return false;
+            
+            return false;
         }
 
-        public static bool RightClickIsPressed()
+        public static bool IsRightClickPressed()
         {
             if (Input.GetMouseButtonDown(1))
             {
                 return true;
             }
-            else return false;
+            
+            return false;
         }
         #endregion
 
         #region Left and right key hold check
-        public static bool LeftClickIsHeld()
+        public static bool IsLeftClickHeld()
         {
             if (Input.GetMouseButton(0))
             {
                 return true;
             }
-            else return false;
+            
+            return false;
         }
 
-        public static bool RightClickIsHeld()
+        public static bool IsRightClickHeld()
         {
             if (Input.GetMouseButton(1))
             {
                 return true;
             }
-            else return false;
+            
+            return false;
         }
         #endregion
 
         #region Left and right click on UI elements pressure check
-        public static bool LeftClickIsPressedOnUIElement(PointerEventData requiredEventData)
+        public static bool IsLeftClickPressedOnUIElement(PointerEventData requiredEventData)
         {
             if (requiredEventData.button == PointerEventData.InputButton.Left)
             {
                 return true;
             }
-            else return false;
+            
+            return false;
         }
 
-        public static bool RightClickIsPressedOnUIElement(PointerEventData requiredEventData)
+        public static bool IsRightClickPressedOnUIElement(PointerEventData requiredEventData)
         {
             if (requiredEventData.button == PointerEventData.InputButton.Right)
             {
                 return true;
             }
-            else return false;
+            
+            return false;
         }
         #endregion
 
@@ -111,24 +118,27 @@ namespace Khynan_Coding
         public static bool IsKeyPressed(KeyCode key)
         {
             if (Input.GetKeyDown(key)) return true;
-            else return false;
+            
+            return false;
         }
 
         public static bool IsKeyUnpressed(KeyCode key)
         {
             if (Input.GetKeyUp(key)) return true;
-            else return false;
+            
+            return false;
         }
 
         public static bool IsKeyMaintained(KeyCode key)
         {
             if (Input.GetKey(key)) return true;
-            else return false;
+            
+            return false;
         }
         #endregion
 
         #region Cursor
-        public static Vector3 GetCursorClickedPosition(LayerMask layerMask)
+        public static Vector3 GetCursorClickPosition(LayerMask layerMask)
         {
             Ray rayFromMainCameraToCursorPosition = Camera.main.ScreenPointToRay(Input.mousePosition);
             Vector3 hitPointPos = Vector3.zero;
@@ -183,12 +193,16 @@ namespace Khynan_Coding
         #endregion
 
         #region Animation
-        public static bool IsAnimationPlaying(Animator animatorComponent, string animationName)
+        public static bool IsThisAnimationPlaying(Animator animatorComponent, string animationName)
         {
             if (animatorComponent.GetCurrentAnimatorStateInfo(0).IsName(animationName)) return true;
 
             return false;
         }
+        #endregion
+
+        #region Editor - OnValidate
+
         #endregion
     }
 }

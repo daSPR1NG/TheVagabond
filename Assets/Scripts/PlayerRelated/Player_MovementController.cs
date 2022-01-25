@@ -12,15 +12,12 @@ namespace Khynan_Coding
         [HideInInspector] public Vector3 DirectionToMove = Vector3.zero;
 
         #region Components
-        [Header("COMPONENTS")]
-        public Animator CharacterAnimator;
-        public NavMeshAgent NavMeshAgent => GetComponent<NavMeshAgent>();
         public Rigidbody Rb => GetComponent<Rigidbody>();
         #endregion
 
         private void Start()
         {
-            SetCharacterSpeed(10f);
+            SetCharacterSpeed(MovementSpeed);
             SetDefaultStateAtStart(IdleState);
         }
 
@@ -59,25 +56,20 @@ namespace Khynan_Coding
             }
 
             //Need a current position, the actual position of the object,
-            //Then you add a direction to move towards to multiplied by a speed represented by the movement speed, this one multiplied by time.-fixed-deltaTime
+            //Then you add a direction to move towards to multiplied by a speed represented by the movement speed,
+            //this one multiplied by time.-fixed-deltaTime
             Rb.position += MovementSpeed * Time.fixedDeltaTime * (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z + Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized;
 
             if (DirectionToMove != Vector3.zero)
             {
-                ResetInteractionState();
+                InteractionHandler.ResetInteractionState();
+
+                UpdateTransformRotation();
+                CharacterAnimationController.SetAnimationFloatValue(
+                    CharacterAnimationController.Animator, "CharacterSpeed", MovementSpeed / 4, 1f);
 
                 Helper.ResetAgentDestination(NavMeshAgent);
                 SwitchState(MovingState);
-            }
-        }
-
-        private void ResetInteractionState()
-        {
-            Player_InteractionHandler interactionHandler = GetComponent<Player_InteractionHandler>();
-
-            if (interactionHandler.TargetDetected is not null)
-            {
-                interactionHandler.ResetInteractingState();
             }
         }
 
@@ -85,6 +77,21 @@ namespace Khynan_Coding
         {
             MovementSpeed = newSpeed;
             NavMeshAgent.speed = newSpeed;
+        }
+
+        private void UpdateTransformRotation()
+        {
+            if (InteractionHandler.HasATarget) { return; }
+
+                //This operation/conversion helps us rotate the character in the right direction relative to the movement direction and the camera's orientation.
+                Quaternion targetRotation = Quaternion.LookRotation(
+                (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z +
+                Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized, Vector3.up);
+
+            //This operation/conversion helps us rotate the character in the right direction relative to his movement.
+            //Quaternion targetRotation = Quaternion.LookRotation(stateManager.DirectionToMove, Vector3.up.normalized);
+
+            transform.localRotation = Quaternion.RotateTowards(transform.rotation, targetRotation, RotationSpeed * Time.fixedDeltaTime);
         }
     }
 }

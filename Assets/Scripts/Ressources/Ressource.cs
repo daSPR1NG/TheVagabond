@@ -49,7 +49,6 @@ namespace Khynan_Coding
             CurrentValue += valueToAdd;
 
             OnRessourceValueChanged?.Invoke(ressourceType);
-            RessourcesHandler.Instance.TriggerUIFeedbackOnRessourceCollectionOrLoss(ressourceType);
         }
 
         public void RemoveToCurrentValue(float valueToRemove)
@@ -59,7 +58,6 @@ namespace Khynan_Coding
             CurrentValue -= valueToRemove;
 
             OnRessourceValueChanged?.Invoke(ressourceType);
-            RessourcesHandler.Instance.TriggerUIFeedbackOnRessourceCollectionOrLoss(ressourceType);
         }
     }
 }

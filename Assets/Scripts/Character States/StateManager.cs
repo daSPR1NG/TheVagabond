@@ -14,6 +14,12 @@ namespace Khynan_Coding
         public BasicState CurrentState { get => currentState; set => currentState = value; }
         #endregion
 
+        #region Public references
+        public CharacterAnimationController CharacterAnimationController => GetComponent<CharacterAnimationController>();
+        public InteractionHandler InteractionHandler => GetComponent<InteractionHandler>();
+        public UnityEngine.AI.NavMeshAgent NavMeshAgent => GetComponent<UnityEngine.AI.NavMeshAgent>();
+        #endregion
+
         protected virtual void Update()
         {
             CurrentState.ProcessState(this);
