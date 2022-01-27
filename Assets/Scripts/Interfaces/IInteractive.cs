@@ -4,7 +4,7 @@ namespace Khynan_Coding
 {
     public interface IInteractive
     {
-        public abstract void Interaction(Transform _interactingObject);
+        public abstract void StartInteraction(Transform _interactingObject);
         public abstract void ExitInteraction();
 
         public static class IInteractiveExtension

@@ -21,7 +21,7 @@ namespace Khynan_Coding
         public Transform target;
         public float followingSpeed = 0.5f;
         private Vector3 offsetFromCharacter;
-        private Player_MovementController TargetStateManager => target.GetComponent<Player_MovementController>();
+        private PlayerController TargetStateManager => target.GetComponent<PlayerController>();
 
         [Space]
 

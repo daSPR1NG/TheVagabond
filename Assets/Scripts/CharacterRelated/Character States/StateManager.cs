@@ -1,23 +1,20 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Khynan_Coding
 {
+    [RequireComponent(typeof(NavMeshAgent))]
     public class StateManager : MonoBehaviour
     {
-        #region Character States
-        private BasicState currentState;
-        public Character_IdleState IdleState = new();
-        public Character_MovingState MovingState = new();
-        public Character_InteractionState InteractionState = new();
         [HideInInspector] public bool CharacterIsMoving = false;
 
+        private BasicState currentState;
         public BasicState CurrentState { get => currentState; set => currentState = value; }
-        #endregion
 
         #region Public references
-        public CharacterAnimationController CharacterAnimationController => GetComponent<CharacterAnimationController>();
         public InteractionHandler InteractionHandler => GetComponent<InteractionHandler>();
-        public UnityEngine.AI.NavMeshAgent NavMeshAgent => GetComponent<UnityEngine.AI.NavMeshAgent>();
+        public NavMeshAgent NavMeshAgent => GetComponent<NavMeshAgent>();
+        private CharacterController CharacterController => GetComponent<CharacterController>();
         #endregion
 
         protected virtual void Update()

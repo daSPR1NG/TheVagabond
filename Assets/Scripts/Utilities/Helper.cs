@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
@@ -19,9 +17,14 @@ namespace Khynan_Coding
             Debug.Log(messageContent, source);
         }
 
-        internal static void DebugMessage(object p)
+        public static bool IsNull<T>(ref T componentType, Transform source = null)
         {
-            throw new NotImplementedException();
+            if (componentType == null)
+            {
+                ThrowErrorMessage("Component is null, can't execute the code from here.", source);
+                return false;
+            }
+            return false;
         }
         #endregion
 
@@ -164,11 +167,11 @@ namespace Khynan_Coding
         {
             navMeshAgent.SetDestination(target);
 
-            Player_MovementController stateManager = navMeshAgent.GetComponent<Player_MovementController>();
+            PlayerController playerController = navMeshAgent.GetComponent<PlayerController>();
 
-            if (stateManager is not null)
+            if (playerController)
             {
-                stateManager.SwitchState(stateManager.MovingState);
+                playerController.SwitchState(playerController.MovingState);
             }
             else ThrowErrorMessage("State Manager not found !", navMeshAgent.transform);
         }
@@ -189,15 +192,6 @@ namespace Khynan_Coding
             }
 
             navMeshAgent.isStopped = false;
-        }
-        #endregion
-
-        #region Animation
-        public static bool IsThisAnimationPlaying(Animator animatorComponent, string animationName)
-        {
-            if (animatorComponent.GetCurrentAnimatorStateInfo(0).IsName(animationName)) return true;
-
-            return false;
         }
         #endregion
 
