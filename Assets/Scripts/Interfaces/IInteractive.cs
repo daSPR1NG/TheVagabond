@@ -4,25 +4,12 @@ namespace Khynan_Coding
 {
     public interface IInteractive
     {
-        public abstract void StartInteraction(Transform _interactingObject);
+        public abstract void StartInteraction(Transform interactionActor);
         public abstract void ExitInteraction();
 
-        public static class IInteractiveExtension
+        public class IInteractiveExtension
         {
-            public static void ThrowTryingInteractionMessage(Transform target)
-            {
-                Helper.DebugMessage("STATUS <TRYING> " + "Interaction with : " + target.name);
-            }
-
-            public static void ThrowInteractionMessage(Transform target)
-            {
-                Helper.DebugMessage("STATUS <BEGIN> " + "Interaction with : " + target.name);
-            }
-
-            public static void ThrowInteractionExitMessage()
-            {
-                Helper.DebugMessage("STATUS <END> " + "Interaction exited");
-            }
+            public float InteractionDuration = 15f;
         }
     }
 }

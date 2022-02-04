@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,42 +5,19 @@ namespace Khynan_Coding
 {
     public enum CursorType
     {
-        Default,
-        Enemy,
-        Ressource,
-        Building,
-    }
-
-    [System.Serializable]
-    public class CursorAppearance
-    {
-        [Header("GENERAL SETTINGS")]
-        public string appearanceName;
-        public CursorType cursorType = CursorType.Default;
-        public bool isSelected = false;
-
-        [Space]
-        [Header("VISUAL SETTINGS")]
-        public List<Texture2D> cursorTextures;
-
-        [Space]
-        [Header("POSITION SETTINGS")]
-        public Vector2 offsetPosition;
-        public float updateDelayValue = 0.15f;
-
-        public int frameCount => cursorTextures.Count;
+        Default, Enemy, Ressource, Building,
     }
 
     public class CursorController : MonoBehaviour
     {
         [Header("APPEARANCE SETTINGS")]
-        public List<CursorAppearance> cursorAppearances;
+        [SerializeField] private List<CursorAppearance> cursorAppearances = new();
 
-        [SerializeField] private float frameRate = 0.1f;
+        [SerializeField] private float updateRate = 0.1f;
         private int currentFrame = 0;
         private float frameTimer = 0f;
-        public bool cursorIsConfined = false;
-        public bool cursorIsLocked = false;
+        [SerializeField] private bool cursorIsConfined = false;
+        [SerializeField] private bool cursorIsLocked = false;
 
         #region Singleton
         public static CursorController Instance;
@@ -59,6 +35,32 @@ namespace Khynan_Coding
         }
         #endregion
 
+        [System.Serializable]
+        public class CursorAppearance
+        {
+            [Header("SETUP")]
+            [SerializeField] private string appearanceName;
+            [SerializeField] private CursorType cursorType = CursorType.Default;
+            [SerializeField] private bool isSelected = false;
+            [SerializeField] private Vector2 offsetPosition;
+            [SerializeField] private float updateDelayValue = 0.15f;
+
+            [Space]
+            [Header("VISUAL SETTINGS")]
+            [SerializeField] private List<Texture2D> cursorTextures = new();
+
+            #region Public references
+            public string AppearanceName { get => appearanceName; set => appearanceName = value; }
+            public CursorType CursorType { get => cursorType; }
+            public bool IsSelected { get => isSelected; set => isSelected = value; }
+            public List<Texture2D> CursorTextures { get => cursorTextures; }
+            public Vector2 OffsetPosition { get => offsetPosition; }
+            public float UpdateDelayValue { get => updateDelayValue; }
+            public int frameCount => CursorTextures.Count;
+            #endregion
+        }
+
+
         private void Start()
         {
             SetCursorAppearance(CursorType.Default);
@@ -75,17 +77,17 @@ namespace Khynan_Coding
 
             for (int i = 0; i < cursorAppearances.Count; i++)
             {
-                cursorAppearances[i].isSelected = false;
+                cursorAppearances[i].IsSelected = false;
 
-                if (cursorAppearances[i].cursorType == cursorType)
+                if (cursorAppearances[i].CursorType == cursorType)
                 {
                     currentCursorAppearance = cursorAppearances[i];
                 }
             }
 
-            currentCursorAppearance.isSelected = true;
+            currentCursorAppearance.IsSelected = true;
 
-            Cursor.SetCursor(currentCursorAppearance.cursorTextures[0], currentCursorAppearance.offsetPosition, CursorMode.Auto);
+            Cursor.SetCursor(currentCursorAppearance.CursorTextures[0], currentCursorAppearance.OffsetPosition, CursorMode.Auto);
             currentFrame = 0;
         }
 
@@ -97,15 +99,15 @@ namespace Khynan_Coding
                 return;
             }
 
-            if (GetCurrentCursorAppearance().cursorTextures.Count <= 1) { return; }
+            if (GetCurrentCursorAppearance().CursorTextures.Count <= 1) { return; }
 
             frameTimer -= Time.deltaTime;
 
             if (frameTimer <= 0f)
             {
-                frameTimer += frameRate;
+                frameTimer += updateRate;
                 currentFrame = (currentFrame + 1) % GetCurrentCursorAppearance().frameCount;
-                Cursor.SetCursor(GetCurrentCursorAppearance().cursorTextures[currentFrame], GetCurrentCursorAppearance().offsetPosition, CursorMode.Auto);
+                Cursor.SetCursor(GetCurrentCursorAppearance().CursorTextures[currentFrame], GetCurrentCursorAppearance().OffsetPosition, CursorMode.Auto);
             }
         }
 
@@ -113,7 +115,7 @@ namespace Khynan_Coding
         {
             for (int i = 0; i < cursorAppearances.Count; i++)
             {
-                if (cursorAppearances[i].isSelected)
+                if (cursorAppearances[i].IsSelected)
                 {
                     return cursorAppearances[i];
                 }
@@ -127,7 +129,7 @@ namespace Khynan_Coding
         {
             for (int i = 0; i < cursorAppearances.Count; i++)
             {
-                cursorAppearances[i].appearanceName = cursorAppearances[i].cursorType.ToString();
+                cursorAppearances[i].AppearanceName = cursorAppearances[i].CursorType.ToString();
             }
         }
         #endregion

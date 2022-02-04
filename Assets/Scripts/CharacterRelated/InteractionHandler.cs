@@ -3,10 +3,10 @@ using UnityEngine.AI;
 
 namespace Khynan_Coding
 {
-    [RequireComponent(typeof(StateManager), typeof(CharacterController))]
+    [RequireComponent(typeof(CharacterController))]
     public class InteractionHandler : MonoBehaviour
     {
-        public delegate void InteractionEventHandler(float interactionDuration, string interactionName);
+        public delegate void InteractionEventHandler(float currentInteractionTimer, float interactionDuration, string interactionName);
         public event InteractionEventHandler OnInteraction;
 
         public delegate void EndOfInteractionEventHandler();
@@ -24,7 +24,7 @@ namespace Khynan_Coding
 
         #region Components
         NavMeshAgent NavMeshAgent => GetComponent<NavMeshAgent>();
-        private PlayerController PlayerController => GetComponent<PlayerController>();
+        private CharacterController Controller => GetComponent<CharacterController>();
         public Transform TargetHit { get => targetHit; private set => targetHit = value; }
         public Transform CurrentTarget { get => currentTarget; private set => currentTarget = value; }
         #endregion
@@ -53,15 +53,14 @@ namespace Khynan_Coding
 
             //If the player hit the ground - for the moment it reset the interaction
             ResetInteraction();
-            PlayerController.SwitchState(PlayerController.IdleState);
+            Controller.SwitchState(Controller.IdleState);
         }
 
         private void AssignTarget(Transform hitTransform)
         {
-            IInteractive interactiveEntity = hitTransform.GetComponent<IInteractive>();
-            bool isTheEntityInteractable = !Helper.IsNull(ref interactiveEntity);
+            InteractiveElement interactiveElement = hitTransform.GetComponent<InteractiveElement>();
 
-            if (!isTheEntityInteractable) { return; }
+            if (!interactiveElement) { return; }
 
             //If last target wasn't known last = current or LastTarget was known but it is not the same as the target hit
             if (!CurrentTarget || CurrentTarget != TargetHit) 
@@ -69,7 +68,7 @@ namespace Khynan_Coding
                 TargetHit = hitTransform;
                 ResetInteraction();
 
-                PlayerController.SwitchState(PlayerController.IdleState);
+                Controller.SwitchState(Controller.IdleState);
 
                 CurrentTarget = TargetHit;
                 TargetHit = null;
@@ -82,16 +81,28 @@ namespace Khynan_Coding
         {
             if (!HasATarget || isInteracting) { return; }
 
+            Controller.currentMovementSpeed = Mathf.Lerp(
+                Controller.currentMovementSpeed, 
+                Controller.MaxMovementSpeed, 
+                Time.deltaTime * Controller.movementSpeedResetMultiplier);
+
+            Controller.SetCharacterSpeed(Controller.currentMovementSpeed, Controller.currentMovementSpeed);
+
             if (TargetHasBeenReached(target))
             {
+                Controller.SetCharacterSpeed(Controller.currentMovementSpeed, Controller.MaxMovementSpeedDividedByX);
+
                 Helper.SetAgentStoppingDistance(NavMeshAgent, agentStoppingDistanceAtStart);
 
-                CollectableResource collectableResource = target.GetComponent<CollectableResource>();
-                collectableResource.StartInteraction(transform);
+                InteractiveElement interactiveElement = target.GetComponent<InteractiveElement>();
+                interactiveElement.StartInteraction(transform);
 
-                PlayerController.SwitchState(PlayerController.InteractionState);
+                Controller.SwitchState(Controller.InteractionState);
 
-                OnInteraction?.Invoke(collectableResource.CollectionDuration, collectableResource.InteractionName);
+                OnInteraction?.Invoke(
+                    interactiveElement.CollectionDuration - interactiveElement.CurrentCollectionTimer, 
+                    interactiveElement.CollectionDuration, 
+                    interactiveElement.InteractionName);
 
                 Debug.Log("Target has been reached, the interaction is starting");
 
@@ -105,8 +116,8 @@ namespace Khynan_Coding
         {
             if (CurrentTarget)
             {
-                CollectableResource collectableResource = CurrentTarget.GetComponent<CollectableResource>();
-                collectableResource.ExitInteraction();
+                InteractiveElement interactiveEntity = CurrentTarget.GetComponent<InteractiveElement>();
+                interactiveEntity.ExitInteraction();
             }
 
             CurrentTarget = null;
@@ -115,7 +126,7 @@ namespace Khynan_Coding
 
             if (interactionIsComplete)
             {
-                PlayerController.SwitchState(PlayerController.IdleState);
+                Controller.SwitchState(Controller.IdleState);
             }
         }
 

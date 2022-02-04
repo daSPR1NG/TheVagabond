@@ -8,13 +8,13 @@ namespace Khynan_Coding
     {
         [HideInInspector] public bool CharacterIsMoving = false;
 
-        private BasicState currentState;
-        public BasicState CurrentState { get => currentState; set => currentState = value; }
+        private CharacterState currentState;
+        public CharacterState CurrentState { get => currentState; set => currentState = value; }
 
         #region Public references
         public InteractionHandler InteractionHandler => GetComponent<InteractionHandler>();
         public NavMeshAgent NavMeshAgent => GetComponent<NavMeshAgent>();
-        private CharacterController CharacterController => GetComponent<CharacterController>();
+        public CharacterController CharacterController => GetComponent<CharacterController>();
         #endregion
 
         protected virtual void Update()
@@ -22,13 +22,13 @@ namespace Khynan_Coding
             CurrentState.ProcessState(this);
         }
 
-        protected void SetDefaultStateAtStart(BasicState baseState)
+        protected void SetDefaultStateAtStart(CharacterState baseState)
         {
             CurrentState = baseState;
             CurrentState.EnterState(this);
         }
 
-        public void SwitchState(BasicState newState)
+        public void SwitchState(CharacterState newState)
         {
             if (CurrentState != newState)
             {

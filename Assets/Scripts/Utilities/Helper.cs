@@ -16,16 +16,6 @@ namespace Khynan_Coding
         {
             Debug.Log(messageContent, source);
         }
-
-        public static bool IsNull<T>(ref T componentType, Transform source = null)
-        {
-            if (componentType == null)
-            {
-                ThrowErrorMessage("Component is null, can't execute the code from here.", source);
-                return false;
-            }
-            return false;
-        }
         #endregion
 
         #region Main Camera
