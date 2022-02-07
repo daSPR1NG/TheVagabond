@@ -3,6 +3,12 @@ using UnityEngine.AI;
 
 namespace Khynan_Coding
 {
+    public enum InteractionType
+    {
+        Unassigned, Chopping, Gathering, Mining,
+
+    }
+
     [RequireComponent(typeof(CharacterController))]
     public class InteractionHandler : MonoBehaviour
     {
@@ -99,10 +105,11 @@ namespace Khynan_Coding
 
                 Controller.SwitchState(Controller.InteractionState);
 
-                OnInteraction?.Invoke(
-                    interactiveElement.CollectionDuration - interactiveElement.CurrentCollectionTimer, 
-                    interactiveElement.CollectionDuration, 
-                    interactiveElement.InteractionName);
+                //A MODIFIER
+                //OnInteraction?.Invoke(
+                //    interactiveElement.CollectionDuration - interactiveElement.CurrentCollectionTimer, 
+                //    interactiveElement.CollectionDuration, 
+                //    interactiveElement.InteractionName);
 
                 Debug.Log("Target has been reached, the interaction is starting");
 
@@ -138,6 +145,30 @@ namespace Khynan_Coding
         private float DistanceFromTarget(Transform target)
         {
             return Vector3.Distance(transform.position, target.position);
+        }
+
+        public void SetCorrectInteractionAnimation(InteractionType interactionType)
+        {
+            AnimatorAssistant animatorAssistant = Controller.Animator.GetComponent<AnimatorAssistant>();
+
+            switch (interactionType)
+            {
+                case InteractionType.Chopping:
+                    animatorAssistant.SetAnimatorRunTimeController(1);
+                    break;
+                case InteractionType.Gathering:
+                    animatorAssistant.SetAnimatorRunTimeController(2);
+                    break;
+                case InteractionType.Mining:
+                    animatorAssistant.SetAnimatorRunTimeController(3);
+                    break;
+            }
+        }
+
+        public void ResetCorrectInteractionAnimation()
+        {
+            AnimatorAssistant animatorAssistant = Controller.Animator.GetComponent<AnimatorAssistant>();
+            animatorAssistant.SetAnimatorRunTimeController(0);
         }
     }
 }

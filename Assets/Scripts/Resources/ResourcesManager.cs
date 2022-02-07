@@ -53,7 +53,7 @@ namespace Khynan_Coding
 
             foreach (Resource thisRessource in characterRessources)
             {
-                if (thisRessource.ressourceType == wantedRessourceType)
+                if (thisRessource.RessourceType == wantedRessourceType)
                 {
                     ressource = thisRessource;
                     return ressource;
@@ -81,8 +81,7 @@ namespace Khynan_Coding
         {
             for (int i = 0; i < characterRessources.Count; i++)
             {
-                characterRessources[i].ressourceName = characterRessources[i].ressourceType.ToString();
-                characterRessources[i].CurrentValue = characterRessources[i].startingValue;
+                characterRessources[i].InitRessource(characterRessources[i].StartingValue);
             }
         }
         #endregion

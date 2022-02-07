@@ -32,6 +32,11 @@ namespace Khynan_Coding
         public bool usesDirectionalArrowMovement = false;
         private Vector3 cameraPosition;
 
+        [Header("CAMERA ZOOM SETTINGS")]
+        [SerializeField] private float zoomScrollSensitivity = 1.5f;
+        [SerializeField] private float zoomStep = 80f;
+        private float cameraZoomValue = 0f;
+
         public bool CameraIsLocked => CameraLockState == CameraLockState.Locked;
         public bool CameraIsUnlocked => CameraLockState == CameraLockState.Unlocked;
 
@@ -56,10 +61,7 @@ namespace Khynan_Coding
         }
         #endregion
 
-        void Start()
-        {
-            offsetFromCharacter = transform.position;
-        }
+        void Start() => offsetFromCharacter = transform.position;
 
         private void Update()
         {
@@ -73,14 +75,8 @@ namespace Khynan_Coding
                 SetCameraLockStateAtRuntime();
             }
 
-            if (Helper.IsKeyMaintained(CameraFocusOnTargetInput))
-            {
-                FocusOnCharacter();
-            }
-            else if (Helper.IsKeyUnpressed(CameraFocusOnTargetInput))
-            {
-                StopFocusOnCharacter();
-            }
+            FocusOnCharacter();
+            CameraZoom();
         }
 
         private void FixedUpdate()
@@ -119,12 +115,21 @@ namespace Khynan_Coding
         #region Camera Focus
         private void FocusOnCharacter()
         {
-            if (CameraLockState != CameraLockState.Locked) CameraLockState = CameraLockState.Locked;
+            if (Helper.IsKeyMaintained(CameraFocusOnTargetInput) && CameraLockState != CameraLockState.Locked)
+            {
+                CameraLockState = CameraLockState.Locked;
+                return;
+            }
+
+            StopFocusOnCharacter();
         }
 
         private void StopFocusOnCharacter()
         {
-            if (CameraLockState != CameraLockState.Unlocked) CameraLockState = CameraLockState.Unlocked;
+            if (Helper.IsKeyUnpressed(CameraFocusOnTargetInput) && CameraLockState != CameraLockState.Unlocked)
+            {
+                CameraLockState = CameraLockState.Unlocked;
+            }
         }
         #endregion
 
@@ -194,6 +199,23 @@ namespace Khynan_Coding
         private void SetCameraTarget()
         {
             target = GameObject.FindGameObjectWithTag("Player").transform;
+        }
+
+        void CameraZoom()
+        {
+            if (Input.mouseScrollDelta.y == 0) { return; }
+
+            if (Input.mouseScrollDelta.y > 0)
+            {
+                cameraZoomValue -= zoomStep * Time.deltaTime * zoomScrollSensitivity;
+            }
+            if (Input.mouseScrollDelta.y < 0)
+            {
+                cameraZoomValue += zoomStep * Time.deltaTime * zoomScrollSensitivity;
+            }
+
+            cameraZoomValue = Mathf.Clamp(cameraZoomValue, 20f, 60f);
+            Helper.GetMainCamera().fieldOfView = cameraZoomValue;
         }
     }
 }

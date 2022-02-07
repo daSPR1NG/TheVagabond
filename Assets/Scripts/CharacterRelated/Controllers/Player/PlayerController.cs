@@ -8,9 +8,9 @@ namespace Khynan_Coding
         Quaternion targetRotation;
 
         [Header("INPUT PRESSURE SETTINGS")]
-        [SerializeField] private float inputPressureMaxValue = 10;
-        [SerializeField] private float inputPressureMultiplier = 0;
-        [SerializeField] private float inputPressureResetMultiplier = 0;
+        [SerializeField] private float inputPressureMaxValue = 10f;
+        [SerializeField] private float inputPressureMultiplier = 1.5f;
+        [SerializeField] private float inputPressureResetMultiplier = 2.5f;
         private float inputPressureValue = 0;
 
         #region Public references
@@ -58,18 +58,26 @@ namespace Khynan_Coding
             }
             #endregion
 
-            UpdateRigidbodyPosition(Rb, MaxMovementSpeed, 
-                (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z
-                + Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized);
+            MovePlayerCharacter();
+        }
 
-            if (DirectionToMove != Vector3.zero) 
+        private void MovePlayerCharacter()
+        {
+            if (DirectionToMove != Vector3.zero)
             {
                 InteractionHandler.ResetInteraction();
                 Helper.ResetAgentDestination(NavMeshAgent);
 
                 UpdateTransformRotation();
 
-                if (CanUpdatePosition(transform.localRotation, targetRotation)) { SwitchState(MovingState); }
+                if (CanUpdatePosition(transform.localRotation, targetRotation))
+                {
+                    UpdateRigidbodyPosition(Rb, MaxMovementSpeed,
+                    (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z
+                    + Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized);
+
+                    SwitchState(MovingState);
+                }
             }
         }
 

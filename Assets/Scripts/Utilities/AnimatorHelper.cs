@@ -80,5 +80,16 @@ namespace Khynan_Coding
             }
             return false;
         }
-    }
+
+
+        //Change it to be a function that returns all the animationClips length of an animator
+         //for (int i = 0; i<interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips.Length; i++)
+         //   {
+         //       Debug.Log("DEBUG | Index : " + i + " "
+         //       + interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips[i].name
+         //       + " | Length : "
+         //       + interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips[i].length + " | AverageDuration : "
+         //       + interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips[i].length);
+         //   }
+}
 }
