@@ -3,15 +3,22 @@ using UnityEngine;
 
 namespace Khynan_Coding
 {
+    [DisallowMultipleComponent]
     public class ResourcesManager : MonoBehaviour
     {
+        public delegate void ResourceEarnsHandler(Resource resource);
+        public event ResourceEarnsHandler OnEarningResources;
+        
+        public delegate void ResourceLossHandler(float valueEarned);
+        public event ResourceLossHandler OnLosingResources;
+
         [Header("OVERTIME INCOME SETTINGS")]
         public bool usesOvertimeIncome = false;
         public float overtimeIncome = 5f;
         public float overtimeDelay = 1f;
 
         [Header("RESSOURCES")]
-        public List<Resource> characterRessources = new();
+        public List<Resource> characterResources = new();
 
         #region Singleton - Awake
         public static ResourcesManager Instance;
@@ -39,35 +46,72 @@ namespace Khynan_Coding
             //Debug
             if (Input.GetKeyDown(KeyCode.M))
             {
-                GetThisRessource(RessourceType.Minerals).AddToCurrentValue(600);
+                GetThisRessource(ResourceType.Minerals).AddToCurrentValue(600);
             }
             if (Input.GetKeyDown(KeyCode.L))
             {
-                GetThisRessource(RessourceType.Minerals).RemoveToCurrentValue(600);
+                GetThisRessource(ResourceType.Minerals).RemoveToCurrentValue(600);
             }
         }
 
-        public Resource GetThisRessource(RessourceType wantedRessourceType)
+        public void GiveResourcesToPlayer(Resource resource)
         {
-            Resource ressource;
+            GetThisRessource(resource.ResourceType).AddToCurrentValue(resource.CurrentValue);
 
-            foreach (Resource thisRessource in characterRessources)
+            OnEarningResources?.Invoke(resource);
+        } 
+        
+        public void TakeResourcesFromPlayer(ResourceType wantedRessourceType, float value)
+        {
+            GetThisRessource(wantedRessourceType).RemoveToCurrentValue(value);
+
+            OnLosingResources?.Invoke(value);
+        }
+
+        public Resource GetThisRessource(ResourceType resourceType)
+        {
+            if(characterResources.Count == 0 || !DoesThisResourceExists(resourceType))
             {
-                if (thisRessource.RessourceType == wantedRessourceType)
+                Debug.LogError("The list character resources is empty");
+                return null;
+            }
+
+            for (int i = 0; i < characterResources.Count; i++)
+            {
+                if (characterResources[i].ResourceType != resourceType)
                 {
-                    ressource = thisRessource;
-                    return ressource;
+                    return characterResources[i];
                 }
             }
 
             return null;
         }
 
+        private bool DoesThisResourceExists(ResourceType resourceType)
+        {
+            if (characterResources.Count == 0)
+            {
+                Debug.LogError("The list character resources is empty");
+                return false;
+            }
+
+            for (int i = 0; i < characterResources.Count; i++)
+            {
+                if (characterResources[i].ResourceType == resourceType)
+                {
+                    return true;
+                }
+            }
+
+            Debug.LogError("The stat type (" + resourceType + ") does not exists.");
+            return false;
+        }
+
         private void IncreaseRessourcesOvertime()
         {
-            for (int i = 0; i < characterRessources.Count; i++)
+            for (int i = 0; i < characterResources.Count; i++)
             {
-                characterRessources[i].AddToCurrentValue(overtimeIncome);
+                characterResources[i].AddToCurrentValue(overtimeIncome);
             }
         }
 
@@ -79,9 +123,11 @@ namespace Khynan_Coding
 
         private void Editor_SetRessourcesDatas()
         {
-            for (int i = 0; i < characterRessources.Count; i++)
+            if (characterResources.Count == 0) { return; }
+
+            for (int i = 0; i < characterResources.Count; i++)
             {
-                characterRessources[i].InitRessource(characterRessources[i].StartingValue);
+                characterResources[i].InitResource();
             }
         }
         #endregion

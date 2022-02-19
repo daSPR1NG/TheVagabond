@@ -6,8 +6,7 @@ namespace Khynan_Coding
 {
     public enum GameState
     {
-        Play,
-        Pause,
+        Play, Pause,
     }
 
     public class GameManager : MonoBehaviour
@@ -15,11 +14,8 @@ namespace Khynan_Coding
         public delegate void GameStateHandler();
         public static event GameStateHandler OnGameStateChanged;
 
-        public GameState gameState = GameState.Play;
-
-        public delegate void CombatStatusHandler();
-        public static event CombatStatusHandler OnEnteringCombat;
-        public static event CombatStatusHandler OnExitingCombat;
+        public GameState GameState = GameState.Play;
+        public Transform ActivePlayer;
 
         #region Singleton
         public static GameManager Instance;
@@ -34,6 +30,11 @@ namespace Khynan_Coding
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
+
+                if (!ActivePlayer)
+                {
+                    ActivePlayer = GameObject.FindGameObjectWithTag("Player").transform;
+                }
             }
         }
         #endregion
@@ -45,7 +46,7 @@ namespace Khynan_Coding
 
         void Update()
         {
-            if (Helper.IsKeyPressed(KeyCode.Escape))
+            if (Helper.IsKeyPressed(InputsManager.Instance.GetInput("Pause")))
             {
                 ToggleGameState();
             }
@@ -68,13 +69,13 @@ namespace Khynan_Coding
 
         public void SetGameStateToPause()
         {
-            gameState = GameState.Pause;
+            GameState = GameState.Pause;
             SetTimeScaleTo(0);
         }
 
         public void SetGameStateToPlayingMod()
         {
-            gameState = GameState.Play;
+            GameState = GameState.Play;
             SetTimeScaleTo(1);
         }
 
@@ -96,7 +97,7 @@ namespace Khynan_Coding
 
         public bool GameIsPaused()
         {
-            if (gameState == GameState.Pause)
+            if (GameState == GameState.Pause)
             {
                 return true;
             }
@@ -106,7 +107,7 @@ namespace Khynan_Coding
 
         public bool GameIsPlaying()
         {
-            if (gameState == GameState.Play)
+            if (GameState == GameState.Play)
             {
                 return true;
             }

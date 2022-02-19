@@ -40,9 +40,7 @@ namespace Khynan_Coding
 
             controller.UpdateCharacterNavMeshAgentRotation(stateManager.NavMeshAgent, stateManager.transform, controller.RotationSpeed);
 
-            AnimatorHelper.SetAnimatorFloatParameter(controller.Animator, "CharacterSpeed", controller.currentMovementSpeed);
-            AnimatorHelper.SetAnimatorFloatParameter(
-                controller.Animator, "CharacterSpeedMultiplier", UnityEngine.Mathf.Clamp(controller.currentMovementSpeed / 2, 0, 1.25f));
+            controller.SetMovementAnimationValue();
         }
     }
 }

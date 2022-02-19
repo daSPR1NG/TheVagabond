@@ -2,11 +2,10 @@ using UnityEngine;
 
 namespace Khynan_Coding
 {
+    [DisallowMultipleComponent]
     public class CharacterController : StateManager
     {
         [Header("MOVEMENT SETTINGS")]
-        [SerializeField] private float maxMovementSpeed = 5f;
-        public float currentMovementSpeed = 0;
         public float movementSpeedResetMultiplier = 0;
         [SerializeField] private float rotationSpeed = 360f;
 
@@ -22,23 +21,23 @@ namespace Khynan_Coding
         #endregion
 
         #region Public references
-        public float MaxMovementSpeed { get => maxMovementSpeed; private set => maxMovementSpeed = value; }
-        public float MaxMovementSpeedDividedByX => MaxMovementSpeed / 4;
+        public float MaxMovementSpeedDividedByX => CharacterStats.GetStatByType(StatType.MovementSpeed).MaxValue / 4;
         public float RotationSpeed { get => rotationSpeed; private set => rotationSpeed = value; }
         public bool IsCharacterMoving => DirectionToMove != Vector3.zero || NavMeshAgent.hasPath;
+        public float MaxMovementSpeed => CharacterStats.GetStatByType(StatType.MovementSpeed).MaxValue;
+        public CharacterStats CharacterStats => GetComponent<CharacterStats>();
         public Animator Animator => transform.GetChild(0).GetComponent<Animator>();
         #endregion
 
         protected virtual void Start()
         {
-            SetCharacterSpeed(MaxMovementSpeed, MaxMovementSpeed);
-            SetCharacterSpeed(currentMovementSpeed, MaxMovementSpeedDividedByX);
+            SetCurrentMSValue(MaxMovementSpeedDividedByX);
         }
 
-        public void SetCharacterSpeed(float speedToUpdate, float newSpeed)
+        public void SetCurrentMSValue(float value)
         {
-            speedToUpdate = newSpeed;
-            NavMeshAgent.speed = newSpeed;
+            CharacterStats.GetStatByType(StatType.MovementSpeed).CurrentValue = value;
+            NavMeshAgent.speed = value;
         }
 
         protected void UpdateRigidbodyPosition(Rigidbody rb, float speed, Vector3 directionToMoveTowards)
@@ -93,6 +92,23 @@ namespace Khynan_Coding
             timeSpentInIdle = 0f;
             AnimatorHelper.SetAnimatorIntParameter(Animator, "IdleActionValue", 0);
             firstIdleActionHasBeenSet = false;
+        }
+
+        public void SetMovementAnimationValue()
+        {
+            AnimatorHelper.SetAnimatorFloatParameter(
+                Animator, "CharacterSpeed", CharacterStats.GetStatByType(StatType.MovementSpeed).CurrentValue);
+            AnimatorHelper.SetAnimatorFloatParameter(
+                Animator, "CharacterSpeedMultiplier", CharacterStats.GetStatByType(StatType.MovementSpeed).CurrentValue / 2.5f);
+        }
+
+        public void MatchCurrentMSToThisValue(float valueToMatch, float updateSpeed)
+        {
+            float currentMovementSpeed = CharacterStats.GetStatByType(StatType.MovementSpeed).CurrentValue;
+
+            currentMovementSpeed = Mathf.Lerp(currentMovementSpeed, valueToMatch, updateSpeed);
+
+            SetCurrentMSValue(currentMovementSpeed);
         }
     }
 }

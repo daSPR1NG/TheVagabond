@@ -4,21 +4,22 @@ namespace Khynan_Coding
 {
     public class UIInteractionProgressBar : UIProgressBar
     {
-        [Header("OBSERVED INTERACTION ACTOR")]
-        [SerializeField] private InteractionHandler interactionHandler;
+        [SerializeField] private InteractionHandler listenedInteractionHandler;
 
         private void OnEnable()
         {
-            interactionHandler.OnInteraction += Init;
-            interactionHandler.OnInteractionEnd += HideProgressBar;
+            listenedInteractionHandler.OnInteraction += Init;
+            listenedInteractionHandler.OnInteractionEnd += HideProgressBar;
         }
 
         private void OnDisable()
         {
-            interactionHandler.OnInteraction -= Init;
-            interactionHandler.OnInteractionEnd -= HideProgressBar;
+            listenedInteractionHandler.OnInteraction -= Init;
+            listenedInteractionHandler.OnInteractionEnd -= HideProgressBar;
         }
 
-        protected override void Update() => base.Update();
+        protected override void Start() => base.Start();
+
+        void Update() => UpdateImageFillAmout(MaxFillValue);
     }
 }

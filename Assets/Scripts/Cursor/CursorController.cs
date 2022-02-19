@@ -8,6 +8,7 @@ namespace Khynan_Coding
         Default, Enemy, Ressource, Building,
     }
 
+    [DisallowMultipleComponent]
     public class CursorController : MonoBehaviour
     {
         [Header("APPEARANCE SETTINGS")]
@@ -113,6 +114,12 @@ namespace Khynan_Coding
 
         private CursorAppearance GetCurrentCursorAppearance()
         {
+            if (cursorAppearances.Count == 0) 
+            {
+                Debug.LogError("No cursor appearances have been set, list count is zero.");
+                return null; 
+            }
+
             for (int i = 0; i < cursorAppearances.Count; i++)
             {
                 if (cursorAppearances[i].IsSelected)
@@ -127,6 +134,8 @@ namespace Khynan_Coding
         #region Editor
         private void OnValidate()
         {
+            if (cursorAppearances.Count == 0) { return; }
+
             for (int i = 0; i < cursorAppearances.Count; i++)
             {
                 cursorAppearances[i].AppearanceName = cursorAppearances[i].CursorType.ToString();

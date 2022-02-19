@@ -7,6 +7,15 @@ namespace Khynan_Coding
         [Header("PRINCIPAL UI COMPONENTS")]
         [SerializeField] private GameObject pauseMenuComponent;
 
+        [Header("SCRIPTS USING UI")]
+        [SerializeField] private ResourcesManager resourcesManager;
+        [SerializeField] private PlayerInventory playerInventory;
+
+        #region Public references
+        public ResourcesManager ResourcesManager { get => resourcesManager; }
+        public PlayerInventory PlayerInventory { get => playerInventory; }
+        #endregion
+
         #region Singleton
         public static UIManager Instance;
 

@@ -81,15 +81,27 @@ namespace Khynan_Coding
             return false;
         }
 
+        public static void DebugAnimationsDuration(Animator animator)
+        {
+            if (!animator || animator.runtimeAnimatorController.animationClips.Length == 0) 
+            {
+                Debug.LogError("No animator or the list of animationClips is empty.");
+                return; 
+            }
 
-        //Change it to be a function that returns all the animationClips length of an animator
-         //for (int i = 0; i<interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips.Length; i++)
-         //   {
-         //       Debug.Log("DEBUG | Index : " + i + " "
-         //       + interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips[i].name
-         //       + " | Length : "
-         //       + interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips[i].length + " | AverageDuration : "
-         //       + interactionActorInteractionHandler.GetComponent<CharacterController>().Animator.runtimeAnimatorController.animationClips[i].length);
-         //   }
-}
+            for (int i = 0; i < animator.runtimeAnimatorController.animationClips.Length; i++)
+            {
+                Debug.Log("DEBUG | Index : " + i + " "
+                + animator.runtimeAnimatorController.animationClips[i].name
+                + " | Length : "
+                + animator.runtimeAnimatorController.animationClips[i].length + " | AverageDuration : "
+                + animator.runtimeAnimatorController.animationClips[i].length);
+            }
+        }
+
+        public static float GetAnimationLength(Animator animator, int animationIndex)
+        {
+            return animator.runtimeAnimatorController.animationClips[animationIndex].length;
+        }
+    }
 }

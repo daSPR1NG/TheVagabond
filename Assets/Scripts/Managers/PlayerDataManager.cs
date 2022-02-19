@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Khynan_Coding
 {
+    [DisallowMultipleComponent]
     public class PlayerDataManager : MonoBehaviour
     {
         [Header("PLAYER")]

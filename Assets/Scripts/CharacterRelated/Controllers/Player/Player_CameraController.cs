@@ -9,40 +9,37 @@ namespace Khynan_Coding
         [Header("CAMERA SETTINGS")]
         [SerializeField] private CameraLockState cameraLockState;
 
-        [Space]
+        #region Inputs
+        private KeyCode CameraLockStateInput => InputsManager.Instance.GetInput("CameraLockState");
+        private KeyCode CameraFocusInput => InputsManager.Instance.GetInput("CameraFocus");
+        #endregion
 
-        [Header("INPUTS")]
-        [SerializeField] private KeyCode changeCameraLockStateInput;
-        [SerializeField] private KeyCode cameraFocusOnTargetInput;
+        [Space][Header("FOLLOWING SETTINGS")]
+        public Transform Target;
+        public float FollowingSpeed = 0.5f;
+        private Vector3 _offsetFromCharacter;
+        private PlayerController _TargetStateManager => Target.GetComponent<PlayerController>();
 
-        [Space]
-
-        [Header("FOLLOWING SETTINGS")]
-        public Transform target;
-        public float followingSpeed = 0.5f;
-        private Vector3 offsetFromCharacter;
-        private PlayerController TargetStateManager => target.GetComponent<PlayerController>();
-
-        [Space]
-
-        [Header("CAMERA MOVEMENT SETTINGS")]
+        [Space][Header("CAMERA MOVEMENT SETTINGS")]
         [SerializeField] private float screenEdgesThreshold = 35f;
         [SerializeField] private float cameraMovementSpeed = 15f;
-        public bool usesScreenEdgesMovement = false;
-        public bool usesDirectionalArrowMovement = false;
-        private Vector3 cameraPosition;
+        public bool UsesScreenEdgesMovement = false;
+        public bool UsesDirectionalArrowMovement = false;
+        private Vector3 _cameraPosition;
 
-        [Header("CAMERA ZOOM SETTINGS")]
-        [SerializeField] private float zoomScrollSensitivity = 1.5f;
-        [SerializeField] private float zoomStep = 80f;
-        private float cameraZoomValue = 0f;
+        [Space]
+        [Header("CAMERA SCROLLING SETTINGS")]
+        [SerializeField] private bool isScrollingEnabled = true;
+        [SerializeField] private float scrollMinValue = 5f;
+        [SerializeField] private float scrollMaxValue = 90f;
+        [SerializeField] private float scrollSensitivity = 1.5f;
+        [SerializeField] private float scrollStep = 15f;
+        private float _cameraScrollValue = 0f;
 
         public bool CameraIsLocked => CameraLockState == CameraLockState.Locked;
         public bool CameraIsUnlocked => CameraLockState == CameraLockState.Unlocked;
 
         public CameraLockState CameraLockState { get => cameraLockState; set => cameraLockState = value; }
-        public KeyCode ChangeCameraLockStateInput { get => changeCameraLockStateInput; }
-        public KeyCode CameraFocusOnTargetInput { get => cameraFocusOnTargetInput; }
 
         #region Singleton
         public static Player_CameraController Instance;
@@ -61,7 +58,7 @@ namespace Khynan_Coding
         }
         #endregion
 
-        void Start() => offsetFromCharacter = transform.position;
+        void Start() => Init();
 
         private void Update()
         {
@@ -70,7 +67,7 @@ namespace Khynan_Coding
                 return;
             }
 
-            if (Helper.IsKeyPressed(ChangeCameraLockStateInput))
+            if (Helper.IsKeyPressed(CameraLockStateInput))
             {
                 SetCameraLockStateAtRuntime();
             }
@@ -81,21 +78,27 @@ namespace Khynan_Coding
 
         private void FixedUpdate()
         {
-            if (CameraIsLocked && TargetStateManager is not null)
-            {
-                FollowCharacter(target);
-            }
+            FollowCharacter(Target);
 
-            if (usesDirectionalArrowMovement && CameraIsUnlocked) MoveCameraWithDirectionalArrows();
-            if (usesScreenEdgesMovement && CameraIsUnlocked) MoveCameraOnHittingScreenEdges();
+            if (UsesDirectionalArrowMovement && CameraIsUnlocked) MoveCameraWithDirectionalArrows();
+            if (UsesScreenEdgesMovement && CameraIsUnlocked) MoveCameraOnHittingScreenEdges();
+        }
+
+        private void Init()
+        {
+            _cameraScrollValue = scrollMaxValue;
+            _offsetFromCharacter = transform.position;
         }
 
         public void FollowCharacter(Transform targetToFollow)
         {
-            //Follow the character, its position updates after a little delay, or not.
-            Vector3 desiredPos = targetToFollow.position + offsetFromCharacter;
+            if (!CameraIsLocked || !_TargetStateManager) { return; }
 
-            Vector3 smoothedPos = Vector3.Lerp(transform.position, desiredPos, followingSpeed * Time.fixedDeltaTime);
+            //Follow the character, its position updates after a little delay, or not.
+            Vector3 desiredPos = targetToFollow.position + _offsetFromCharacter;
+
+            Vector3 smoothedPos = 
+                Vector3.SmoothDamp(transform.position, desiredPos, ref desiredPos, Time.fixedDeltaTime * FollowingSpeed);
             transform.position = smoothedPos;
         }
 
@@ -115,7 +118,7 @@ namespace Khynan_Coding
         #region Camera Focus
         private void FocusOnCharacter()
         {
-            if (Helper.IsKeyMaintained(CameraFocusOnTargetInput) && CameraLockState != CameraLockState.Locked)
+            if (Helper.IsKeyMaintained(CameraFocusInput) && CameraLockState != CameraLockState.Locked)
             {
                 CameraLockState = CameraLockState.Locked;
                 return;
@@ -126,7 +129,7 @@ namespace Khynan_Coding
 
         private void StopFocusOnCharacter()
         {
-            if (Helper.IsKeyUnpressed(CameraFocusOnTargetInput) && CameraLockState != CameraLockState.Unlocked)
+            if (Helper.IsKeyUnpressed(CameraFocusInput) && CameraLockState != CameraLockState.Unlocked)
             {
                 CameraLockState = CameraLockState.Unlocked;
             }
@@ -136,58 +139,58 @@ namespace Khynan_Coding
         #region Camera movements
         void MoveCameraOnHittingScreenEdges()
         {
-            cameraPosition = Vector3.zero;
+            _cameraPosition = Vector3.zero;
 
             // move on +X axis
             if (Input.mousePosition.x >= Screen.width - screenEdgesThreshold)
             {
-                cameraPosition.x += cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.x += cameraMovementSpeed * Time.fixedDeltaTime;
             }
             // move on -X axis
             if (Input.mousePosition.x <= screenEdgesThreshold)
             {
-                cameraPosition.x -= cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.x -= cameraMovementSpeed * Time.fixedDeltaTime;
             }
             // move on +Z axis
             if (Input.mousePosition.y >= Screen.height - screenEdgesThreshold)
             {
-                cameraPosition.z += cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.z += cameraMovementSpeed * Time.fixedDeltaTime;
             }
             // move on -Z axis
             if (Input.mousePosition.y <= screenEdgesThreshold)
             {
-                cameraPosition.z -= cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.z -= cameraMovementSpeed * Time.fixedDeltaTime;
             }
 
-            SetCameraPosition(cameraPosition);
+            SetCameraPosition(_cameraPosition);
         }
 
         void MoveCameraWithDirectionalArrows()
         {
-            cameraPosition = Vector3.zero;
+            _cameraPosition = Vector3.zero;
 
             // move on +X axis
             if (Helper.IsKeyMaintained(KeyCode.RightArrow))
             {
-                cameraPosition.x += cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.x += cameraMovementSpeed * Time.fixedDeltaTime;
             }
             // move on -X axis
             if (Helper.IsKeyMaintained(KeyCode.LeftArrow))
             {
-                cameraPosition.x -= cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.x -= cameraMovementSpeed * Time.fixedDeltaTime;
             }
             // move on +Z axis
             if (Helper.IsKeyMaintained(KeyCode.UpArrow))
             {
-                cameraPosition.z += cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.z += cameraMovementSpeed * Time.fixedDeltaTime;
             }
             // move on -Z axis
             if (Helper.IsKeyMaintained(KeyCode.DownArrow))
             {
-                cameraPosition.z -= cameraMovementSpeed * Time.fixedDeltaTime;
+                _cameraPosition.z -= cameraMovementSpeed * Time.fixedDeltaTime;
             }
 
-            SetCameraPosition(cameraPosition);
+            SetCameraPosition(_cameraPosition);
         }
 
         void SetCameraPosition(Vector3 newPos)
@@ -198,24 +201,37 @@ namespace Khynan_Coding
 
         private void SetCameraTarget()
         {
-            target = GameObject.FindGameObjectWithTag("Player").transform;
+            Target = GameObject.FindGameObjectWithTag("Player").transform;
         }
+
+        float cameraXRotation = 50.25f;
+        float cameraYPosition = 25f;
 
         void CameraZoom()
         {
-            if (Input.mouseScrollDelta.y == 0) { return; }
+            if (!isScrollingEnabled && Input.mouseScrollDelta.y == 0) { return; }
 
             if (Input.mouseScrollDelta.y > 0)
             {
-                cameraZoomValue -= zoomStep * Time.deltaTime * zoomScrollSensitivity;
+                _cameraScrollValue -= scrollStep * Time.deltaTime * scrollSensitivity * 1.75f;
+                cameraXRotation -= scrollStep * Time.deltaTime * scrollSensitivity * 2;
+                cameraYPosition -= scrollStep * Time.deltaTime * scrollSensitivity;
             }
             if (Input.mouseScrollDelta.y < 0)
             {
-                cameraZoomValue += zoomStep * Time.deltaTime * zoomScrollSensitivity;
+                _cameraScrollValue += scrollStep * Time.deltaTime * scrollSensitivity * 1.75f;
+                cameraXRotation += scrollStep * Time.deltaTime * scrollSensitivity * 2;
+                cameraYPosition += scrollStep * Time.deltaTime * scrollSensitivity;
             }
 
-            cameraZoomValue = Mathf.Clamp(cameraZoomValue, 20f, 60f);
-            Helper.GetMainCamera().fieldOfView = cameraZoomValue;
+            cameraXRotation = Mathf.Clamp(cameraXRotation, 7.5f, 50.25f);
+            transform.eulerAngles = new Vector3(cameraXRotation, transform.eulerAngles.y, 0);
+
+            cameraYPosition = Mathf.Clamp(cameraYPosition, 3.75f, 25);
+            transform.position = new Vector3(transform.position.x, cameraYPosition, transform.position.z);
+
+            _cameraScrollValue = Mathf.Clamp(_cameraScrollValue, scrollMinValue, scrollMaxValue);
+            transform.GetComponent<Cinemachine.CinemachineVirtualCamera>().m_Lens.FieldOfView = _cameraScrollValue;
         }
     }
 }

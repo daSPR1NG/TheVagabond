@@ -1,82 +1,60 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Khynan_Coding
 {
-    //Repenser l'interaction comme un TakeDamage - OnTakingDamage.
-    //Ce qui veut dire que lorsque le joueur interragie avec une ressource,
-    //il lui inflige des dégâts proportionnels à l'efficatité de ses outils.
-    //La progressBar en charge de démontrer l'avancée de cette interaction sera une barre de vie =>
-    //Dégâts infligés - vie de la ressource (au début 0 - 150 => 25 - 150 => 50 - 150 => etc.)
+    public enum InteractionType
+    {
+        Unassigned, Logging, Harvesting, Mining, Talking
+    }
 
+    [DisallowMultipleComponent]
     public class InteractiveElement : MonoBehaviour, IInteractive, IDetectable
     {
         [Header("SETUP")]
-        public Transform InteractionActor;
-        [SerializeField] private InteractionType interactionType = InteractionType.Unassigned;
-        [SerializeField] private float collectionDurationOffset = 0.35f;
         [SerializeField] private string interactionName = "[Type HERE]";
-        [SerializeField] private float minimumDistanceToInteract = 1.25f;
-        private float collectionDuration = 1;
+        [SerializeField] private InteractionType interactionType = InteractionType.Unassigned;
+        [SerializeField] private bool isProgressive = true;
+        private Transform _interactionActor;
+        private bool _isInteractive = true;
 
-        [Header("OTHER SETTINGS")]
+        [Space][Header("VALUE SETTINGS")]
+        [Tooltip("This value defines the number of time the interaction would be executed. " +
+            "It multiplies the associated animation duration by its value")]
+        [SerializeField] private int interactionRepeatTime = 2;
+        [SerializeField] private float minimumDistanceToInteract = 1.25f;
+        
+        private float _collectionDuration = 1;
+        private float _currentCollectionDuration = 0;
+
+        [Space][Header("EFFECT SETTINGS")]
         [SerializeField] private GameObject interactionCompleteVFX;
         [SerializeField] private AudioClip interactionCompleteSFX;
 
-        [Header("APPEARANCE SETTINGS")]
-        public List<ResourceAspect> ResourceAspects;
-        private int aspectIndex = 0;
-
-        private bool anInteractionIsProcessing = false;
+        private bool _anInteractionIsProcessing = false;
+        private bool _isItTargetedByPlayer = false;
 
         #region References
         public string InteractionName { get => interactionName; }
         public InteractionType InteractionType { get => interactionType; }
         public float MinimumDistanceToInteract { get => minimumDistanceToInteract; }
-        public float CollectionDuration { get => collectionDuration; private set => collectionDuration = value; }
-        public bool AnInteractionIsProcessing { get => anInteractionIsProcessing; private set => anInteractionIsProcessing = value; }
-        private OutlineModule OutlineComponent => GetComponent<OutlineModule>();
-        private MeshCollider MeshCollider => GetComponent<MeshCollider>();
+        public float CollectionDuration { get => _collectionDuration; private set => _collectionDuration = value; }
+        public bool AnInteractionIsProcessing { get => _anInteractionIsProcessing; private set => _anInteractionIsProcessing = value; }
+        public OutlineModule OutlineComponent => transform.GetChild(0).GetComponent<OutlineModule>();
+        protected Transform InteractionActor { get => _interactionActor; private set => _interactionActor = value; }
+        protected int InteractionRepeatTime { get => interactionRepeatTime; }
+        public bool IsProgressive { get => isProgressive; }
+        public bool IsItTargetedByPlayer { get => _isItTargetedByPlayer; set => _isItTargetedByPlayer = value; }
+        public bool IsInteractive { get => _isInteractive; private set => _isInteractive = value; }
         #endregion
-
-        [System.Serializable]
-        public class ResourceAspect
-        {
-            [SerializeField] private string m_Name;
-            [SerializeField] private GameObject aspectGO;
-
-            public GameObject AspectGO { get => aspectGO; }
-
-            #region AspectGO - Display / Hide
-            private void DisplayNextAppearance(ResourceAspect aspect)
-            {
-                aspect.AspectGO.SetActive(true);
-            }
-
-            private void HidePreviousAppearance(ResourceAspect aspect)
-            {
-                aspect.AspectGO.SetActive(false);
-            }
-            #endregion
-
-            public void UpdateAppearance(ResourceAspect previousAspect, ResourceAspect nextAspect)
-            {
-                HidePreviousAppearance(previousAspect);
-                DisplayNextAppearance(nextAspect);
-            }
-        }
 
         protected virtual void Start() => Init();
 
         protected virtual void Update() => InteractionProgression();
 
         #region Init
-        private void Init()
+        protected virtual void Init()
         {
-            if (ResourceAspects.Count > 0)
-            {
-                UpdateMeshCollider(ResourceAspects[0]);
-            }
+            //Empty for the moment
         }
         #endregion
 
@@ -88,14 +66,39 @@ namespace Khynan_Coding
             InteractionHandler interactionActorInteractionHandler = InteractionActor.GetComponent<InteractionHandler>();
             interactionActorInteractionHandler.SetCorrectInteractionAnimation(InteractionType);
 
-            if (!AnInteractionIsProcessing)
-            {
-                AnInteractionIsProcessing = true;
-            }
+            CollectionDuration = GetCollectionDuration();
+
+            _currentCollectionDuration = 0;
+
+            if (AnInteractionIsProcessing) { return; }
+
+            AnInteractionIsProcessing = true;
+        }
+
+        protected float GetInteractionAnimationLength()
+        {
+            if (!InteractionActor) { return 0; }
+
+            Animator controllerAnimator = InteractionActor.GetComponent<CharacterController>().Animator;
+
+            return AnimatorHelper.GetAnimationLength(controllerAnimator, 6);
+        }
+
+        protected float GetCollectionDuration()
+        {
+            if (!InteractionActor) { return 0; }
+
+            CharacterController cC = InteractionActor.GetComponent<CharacterController>();
+
+            Debug.Log(GetInteractionAnimationLength() * InteractionRepeatTime * (1 / cC.CharacterStats.GetStatByType(StatType.GatherSpeed).CurrentValue));
+
+            return GetInteractionAnimationLength() * InteractionRepeatTime * (1 / cC.CharacterStats.GetStatByType(StatType.GatherSpeed).CurrentValue);
         }
 
         public virtual void ExitInteraction()
         {
+            IsItTargetedByPlayer = false;
+
             if (!InteractionActor) { return; }
 
             InteractionHandler interactionActorInteractionHandler = InteractionActor.GetComponent<InteractionHandler>();
@@ -109,18 +112,24 @@ namespace Khynan_Coding
         #region Interaction - Progression
         protected virtual void InteractionProgression()
         {
-            //Call Take damage here
-
-            aspectIndex++;
-            UpdateAppearance(aspectIndex);
+            UpdateInteractionProgressionTimer();
         }
 
-        private void UpdateAppearance(int index)
+        private void UpdateInteractionProgressionTimer()
         {
-            ResourceAspects[index].UpdateAppearance(ResourceAspects[index], ResourceAspects[index]);
-            UpdateMeshCollider(ResourceAspects[index]);
+            if (!AnInteractionIsProcessing) { return; }
 
-            Debug.Log("Change aspect :" + " ASPECT N° " + index);
+            _currentCollectionDuration += Time.deltaTime;
+
+            Debug.Log("Interaction Progression.");
+
+            if (_currentCollectionDuration >= CollectionDuration)
+            {
+                _currentCollectionDuration = CollectionDuration;
+                OnInteractionCompleted(InteractionActor);
+
+                Debug.Log("Interaction Completed.");
+            }
         }
         #endregion
 
@@ -129,10 +138,10 @@ namespace Khynan_Coding
         {
             if (!interactionActor) { return; }
 
+            InteractionCompletedFeedback();
+
             InteractionHandler interactionHandler = interactionActor.GetComponent<InteractionHandler>();
             interactionHandler.ResetInteraction(true);
-
-            InteractionCompletedFeedback();
         }
 
         private void InteractionCompletedFeedback()
@@ -151,15 +160,24 @@ namespace Khynan_Coding
         }
         #endregion
 
+        public void SetInteractiveValue(bool value)
+        {
+            IsInteractive = value;
+        }
+
         #region Cursor Detection
         public void OnMouseEnter()
         {
+            if (!IsInteractive) { return; }
+
             IDetectable.IDetectableExtension.SetCursorAppearanceOnDetection(
                 CursorType.Ressource, OutlineComponent, true, transform.name + " has been detected.");
         }
 
         public void OnMouseExit()
         {
+            if (!IsInteractive) { return; }
+
             IDetectable.IDetectableExtension.SetCursorAppearanceOnDetection(
                 CursorType.Default, OutlineComponent, false, transform.name + " is no longer detected.");
         }
@@ -172,12 +190,5 @@ namespace Khynan_Coding
             }
         }
         #endregion
-
-        private void UpdateMeshCollider(ResourceAspect aspect)
-        {
-            if (!aspect.AspectGO.GetComponent<MeshFilter>().sharedMesh) { return; }
-
-            MeshCollider.sharedMesh = aspect.AspectGO.GetComponent<MeshFilter>().sharedMesh;
-        }
     }
 }

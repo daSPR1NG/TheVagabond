@@ -185,8 +185,28 @@ namespace Khynan_Coding
         }
         #endregion
 
-        #region Editor - OnValidate
+        #region String - float value rounded to seconds or minutes
+        public static string GetStringOfValueRoundedToMinutes(float value)
+        {
+            string minutes = Mathf.Floor(value / 60).ToString("0.00");
 
+            return minutes;
+        }
+
+        public static string GetStringOfValueRoundedToSeconds(float value)
+        {
+            string seconds = Mathf.Floor(value % 60).ToString("0.00");
+
+            return seconds;
+        }
+
+        public static string GetStringOfValueRoundedToMinutesAndSeconds(float value)
+        {
+            string minutes = Mathf.Floor(value / 60).ToString("00");
+            string seconds = Mathf.Floor(value % 60).ToString("00");
+
+            return (minutes + " : " + seconds);
+        }
         #endregion
     }
 }

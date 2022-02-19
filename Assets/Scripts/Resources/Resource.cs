@@ -2,15 +2,19 @@ using UnityEngine;
 
 namespace Khynan_Coding
 {
+    public enum ResourceType
+    {
+        Unassigned, Log, Stone, Food, Minerals,
+    }
+
     [System.Serializable]
     public class Resource
     {
         [Header("GENERAL SETTINGS")]
-        [SerializeField] private string ressourceName;
-        public RessourceType RessourceType;
+        [SerializeField] private string resourceName;
+        public ResourceType ResourceType;
 
         [Space]
-
         [Header("VALUES")]
         [SerializeField] private float startingValue = 0f;
         [SerializeField] private float maxValue;
@@ -18,23 +22,24 @@ namespace Khynan_Coding
         public float CurrentValue
         {
             get => currentValue;
-            set { currentValue = Mathf.Clamp(value, 0, MaxValue); }
+            set { currentValue = maxValue > 0 ? Mathf.Clamp(value, 0, MaxValue) : currentValue = value; }
         }
 
         #region Public references
         public float StartingValue { get => startingValue; }
         public float MaxValue { get => maxValue; }
+        public string ResourceName { get => resourceName; private set => resourceName = value; }
         #endregion
 
-        public delegate void RessourceValueHandler(RessourceType ressourceType);
-        public event RessourceValueHandler OnRessourceValueChanged;
+        public delegate void ResourceValueHandler(ResourceType ressourceType);
+        public event ResourceValueHandler OnRessourceValueChanged;
 
-        public void InitRessource(float startingValue)
+        public void InitResource()
         {
-            CurrentValue = startingValue;
-            ressourceName = RessourceType.ToString();
+            CurrentValue = StartingValue;
+            ResourceName = ResourceType.ToString();
 
-            OnRessourceValueChanged?.Invoke(RessourceType);
+            OnRessourceValueChanged?.Invoke(ResourceType);
         }
 
         public void AddToCurrentValue(float valueToAdd)
@@ -43,7 +48,7 @@ namespace Khynan_Coding
 
             CurrentValue += valueToAdd;
 
-            OnRessourceValueChanged?.Invoke(RessourceType);
+            OnRessourceValueChanged?.Invoke(ResourceType);
         }
 
         public void RemoveToCurrentValue(float valueToRemove)
@@ -52,7 +57,7 @@ namespace Khynan_Coding
 
             CurrentValue -= valueToRemove;
 
-            OnRessourceValueChanged?.Invoke(RessourceType);
+            OnRessourceValueChanged?.Invoke(ResourceType);
         }
     }
 }

@@ -7,6 +7,13 @@ namespace Khynan_Coding
     {
         Quaternion targetRotation;
 
+        #region Inputs
+        private KeyCode MoveForward => InputsManager.Instance.GetInput("MoveForward");
+        private KeyCode MoveBackward => InputsManager.Instance.GetInput("MoveBackward");
+        private KeyCode MoveLeft => InputsManager.Instance.GetInput("MoveLeft");
+        private KeyCode MoveRight => InputsManager.Instance.GetInput("MoveRight");
+        #endregion
+
         [Header("INPUT PRESSURE SETTINGS")]
         [SerializeField] private float inputPressureMaxValue = 10f;
         [SerializeField] private float inputPressureMultiplier = 1.5f;
@@ -37,22 +44,22 @@ namespace Khynan_Coding
             UpdateInputPressureValue();
 
             #region Vertical Axis - Z, S
-            if (Helper.IsKeyPressed(KeyCode.Z) || Helper.IsKeyMaintained(KeyCode.Z))
+            if (Helper.IsKeyPressed(KeyCode.Z) || Helper.IsKeyMaintained(MoveForward))
             {
                 DirectionToMove.z = 1;
             }
-            if (Helper.IsKeyPressed(KeyCode.S) || Helper.IsKeyMaintained(KeyCode.S))
+            if (Helper.IsKeyPressed(KeyCode.S) || Helper.IsKeyMaintained(MoveBackward))
             {
                 DirectionToMove.z = -1;
             }
             #endregion
 
             #region Horizontal Axis - Q, D
-            if (Helper.IsKeyPressed(KeyCode.Q) || Helper.IsKeyMaintained(KeyCode.Q))
+            if (Helper.IsKeyPressed(KeyCode.Q) || Helper.IsKeyMaintained(MoveLeft))
             {
                 DirectionToMove.x = -1;
             }
-            if (Helper.IsKeyPressed(KeyCode.D) || Helper.IsKeyMaintained(KeyCode.D))
+            if (Helper.IsKeyPressed(KeyCode.D) || Helper.IsKeyMaintained(MoveRight))
             {
                 DirectionToMove.x = 1;
             }
@@ -121,12 +128,14 @@ namespace Khynan_Coding
 
         private void UpdatePlayerCharacterSpeed()
         {
+            float currentMovementSpeed;
+
             currentMovementSpeed =
                !AKeyIsPressed() && !AKeyIsMaintained() ? MaxMovementSpeedDividedByX : MaxMovementSpeedDividedByX + inputPressureValue;
 
             currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, MaxMovementSpeedDividedByX, MaxMovementSpeed);
 
-            SetCharacterSpeed(currentMovementSpeed, currentMovementSpeed);
+            SetCurrentMSValue(currentMovementSpeed);
 
             AnimatorHelper.SetAnimatorFloatParameter(Animator, "CharacterSpeedMultiplier", Mathf.Clamp(currentMovementSpeed / 2, 0, 1.25f));
         }

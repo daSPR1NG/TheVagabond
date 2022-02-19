@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9733588f558de3446804c4e556a4cf32, type: 3}
+  m_Name: Gear_Pickaxe_Tier_0
+  m_EditorClassIdentifier: 
+  _gearName: Gear_Pickaxe_Tier_0
+  _gearSpriteIcon: {fileID: 21300000, guid: 0138ff996cf7410479c3dfffa5472ee1, type: 3}
+  _gearRecipe: {fileID: 11400000, guid: 4942d7e8284043342931bc05b1bfb352, type: 2}
+  _gearStats:
+  - m_Name: AttackDamage
+    type: 3
+    needsToMatchMaxValueAtStart: 1
+    maxValue: 15
+    currentValue: 15
+    criticalThresholdValue: 0

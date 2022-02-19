@@ -10,16 +10,22 @@ namespace Khynan_Coding
         [Header("SETUP")]
         [SerializeField] private bool isUsingFilledProgressBarType = true;
         [Tooltip("Notes that the element 0 is always the filled progress bar type, the element 1 is always the other type")]
-        [SerializeField] private List<ProgressBarElements> progressBarElements = new();
+        [Space][SerializeField] private List<ProgressBarElements> progressBarElements = new();
+        private bool _isProgressive = true;
 
         [Header("FILL IMAGE SETTINGS")]
-        [SerializeField] private bool doesItFillUp = false;
+        [SerializeField] private bool doesItFillsPositively = false;
         [SerializeField] private float refreshMultiplier = 1f;
-        private float currentFillValue = 0f;
-        private float maxFillValue = 0f;
+        private float _currentFillValue = 0f;
+        private float _maxFillValue = 0f;
+
+        [Header("LOOK SETTINGS")]
+        [SerializeField] private Image backgroundImage;
+        [SerializeField] private List<BackgroundLookElements> backgroundLooks = new();
 
         #region Public references
-        public float CurrentFillValue { get => currentFillValue; private set => currentFillValue = Mathf.Clamp(value, 0, maxFillValue); }
+        public float CurrentFillValue { get => _currentFillValue; private set => _currentFillValue = Mathf.Clamp(value, 0, MaxFillValue); }
+        public float MaxFillValue { get => _maxFillValue; private set => _maxFillValue = value; }
         #endregion
 
         [System.Serializable]
@@ -47,53 +53,116 @@ namespace Khynan_Coding
             public Image ImageToUpdate { get => imageToUpdate; }
             public Sprite[] ImageSprites { get => imageSprites; }
             #endregion
+
+            public void SetName(string stringValue)
+            {
+                if (m_Name == stringValue) { return; }
+
+                m_Name = stringValue;
+            }
         }
 
-        protected virtual void Update() => UpdateImageFillAmout(maxFillValue);
-
-        protected virtual void Init(float currentValue, float maxValue, string attachedTextContent = null)
+        [System.Serializable]
+        public class BackgroundLookElements
         {
-            DisplayProgressBar();
+            [SerializeField] private string m_Name;
+            [SerializeField] private InteractionType linkedInteractionType;
+            [SerializeField] private Sprite backgroundLookSprite;
+
+            #region Public references
+            public InteractionType LinkedInteractionType { get => linkedInteractionType; }
+            public Sprite BackgroundLookSprite { get => backgroundLookSprite; private set => backgroundLookSprite = value; }
+            #endregion
+
+            public void SetName(string stringValue)
+            {
+                if (m_Name == stringValue) { return; }
+
+                m_Name = stringValue;
+            }
+
+            public void AssignMyBackgroundSpriteTo(Image image)
+            {
+                image.sprite = BackgroundLookSprite;
+            }
+        }
+
+        protected virtual void Start() => HideProgressBar();
+
+        #region Initialization - Action Name / Fill Amount
+        protected virtual void Init(
+            InteractionType type, float currentValue, float maxValue, string attachedTextContent = null, bool isProgressive = false)
+        {
+            if (!isProgressive) { return; }
+
+            DisplayProgressBar(type);
             InitImageFillAmount(currentValue, maxValue);
 
             if (!string.IsNullOrEmpty(attachedTextContent)) 
             {
-                switch (isUsingFilledProgressBarType)
-                {
-                    case true :
-                        progressBarElements[0].ActionText.SetText(attachedTextContent);
-                        break;
-                    case false:
-                        progressBarElements[1].ActionText.SetText(attachedTextContent);
-                        break;
-                }
+                InitProgressBarActionNameText(attachedTextContent);
+            }
+
+            _isProgressive = isProgressive;
+        }
+
+        private void InitProgressBarActionNameText(string stringValue)
+        {
+            switch (isUsingFilledProgressBarType)
+            {
+                case true:
+                    progressBarElements[0].ActionText.SetText(stringValue);
+                    break;
+                case false:
+                    progressBarElements[1].ActionText.SetText(stringValue);
+                    break;
             }
         }
 
         private void InitImageFillAmount(float currentValue, float maxValue)
         {
             CurrentFillValue = currentValue;
-            maxFillValue = maxValue;
+            MaxFillValue = maxValue;
 
-            progressBarElements[0].FillImage.fillAmount = currentValue / maxValue;
+            SetImageFillAmount(currentValue, maxValue);
+
+            progressBarElements[0].ProgressTimerText.SetText(
+               CurrentFillValue.ToString() + "s" + " / " + (maxValue % 60).ToString("0.00") + "s");
         }
+        #endregion
 
-        private void UpdateImageFillAmout(float maxValue)
+        #region Update / Set - Fill Amount value
+        protected virtual void UpdateImageFillAmout(float maxValue)
         {
-            if (!progressBarElements[0].ProgressBarContentToActivate.activeInHierarchy) { return; }
+            if (!progressBarElements[0].ProgressBarContentToActivate.activeInHierarchy || !_isProgressive) { return; }
 
             Debug.Log("Update image fill amount");
 
-            CurrentFillValue += doesItFillUp ?
-                Time.deltaTime * refreshMultiplier : -Time.deltaTime * refreshMultiplier;
+            CurrentFillValue += doesItFillsPositively ? Time.deltaTime * refreshMultiplier : -Time.deltaTime * refreshMultiplier;
 
-            progressBarElements[0].ProgressTimerText.SetText(CurrentFillValue.ToString("0.0" + "s"));
-
-            progressBarElements[0].FillImage.fillAmount = CurrentFillValue / maxValue;
+            //The index is 0 because only the first type - which is a filled type - is used here !
+            progressBarElements[0].ProgressTimerText.SetText(
+                CurrentFillValue.ToString("0.00") /*+ "s"*/ + " / " + (MaxFillValue % 60).ToString("0.00") + "s");
+            SetImageFillAmount(CurrentFillValue, maxValue);
         }
 
-        protected void DisplayProgressBar()
+        private void SetImageFillAmount(float current, float max)
         {
+            progressBarElements[0].FillImage.fillAmount = current / max;
+        }
+        #endregion
+
+        #region ProgressBar set active - Display / Hide
+        private void DisplayProgressBar(InteractionType type)
+        {
+            if (progressBarElements.Count == 0)
+            {
+                Debug.LogError("The list progressBarElements has only one element or is empty and cannot execute the following code.");
+                return;
+            }
+
+            SetProgressBarLook(type);
+
             switch (isUsingFilledProgressBarType)
             {
                 case true:
@@ -107,6 +176,12 @@ namespace Khynan_Coding
 
         protected void HideProgressBar()
         {
+            if (progressBarElements.Count == 0)
+            {
+                Debug.LogError("The list progressBarElements has only one element or is empty and cannot execute the following code.");
+                return;
+            }
+
             switch (isUsingFilledProgressBarType)
             {
                 case true:
@@ -117,5 +192,53 @@ namespace Khynan_Coding
                     break;
             }
         }
+        #endregion
+
+        private void SetProgressBarLook(InteractionType type)
+        {
+            if (backgroundLooks.Count == 0) 
+            {
+                Debug.LogError("Problem : backgroundLooks.Count is empty");
+                return; 
+            }
+
+            for (int i = 0; i < backgroundLooks.Count; i++)
+            {
+                if (backgroundLooks[i].LinkedInteractionType != type) { continue; }
+
+                backgroundLooks[i].AssignMyBackgroundSpriteTo(backgroundImage);
+            }
+        }
+
+        #region OnValidate
+        private void OnValidate()
+        {
+            SetProgressBarElementsName();
+            SetBackgroundLooksName();
+        }
+
+        private void SetProgressBarElementsName()
+        {
+            if (progressBarElements.Count == 0) { return; }
+
+            for (int i = 0; i < progressBarElements.Count; i++)
+            {
+                if (!progressBarElements[i].ProgressBarContentToActivate)
+                {
+                    progressBarElements[i].SetName(progressBarElements[i].ProgressBarContentToActivate.name);
+                }
+            }
+        }
+
+        private void SetBackgroundLooksName()
+        {
+            if (backgroundLooks.Count == 0) { return; }
+
+            for (int i = 0; i < backgroundLooks.Count; i++)
+            {
+                backgroundLooks[i].SetName(backgroundLooks[i].LinkedInteractionType.ToString());
+            }
+        }
+        #endregion
     }
 }
