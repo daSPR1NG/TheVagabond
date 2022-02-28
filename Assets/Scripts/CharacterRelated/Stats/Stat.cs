@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Khynan_Coding
 {
     public enum StatType
     {
-        Unassigned, Health, MovementSpeed, GatherSpeed,
+        Unassigned, Health, MovementSpeed, GatherSpeed, AttackSpeed
     }
 
     [System.Serializable]
@@ -15,10 +16,11 @@ namespace Khynan_Coding
         [SerializeField] private StatType type = StatType.Unassigned;
 
         [Space][Header("VALUES")]
-        [SerializeField] private bool needsToMatchMaxValueAtStart = true;
+        [SerializeField] private bool needsToMatchBaseValueAtStart = true;
+        [SerializeField] private float baseValue = 0;
         [SerializeField] private float maxValue = 0;
+        [SerializeField] private List<StatModifier> statModifiers = new();
         public float currentValue = 0;
-        
 
         [Space][Header("CONDITIONNAL SETTINGS")]
         [Range(0, 100)] [SerializeField] private float criticalThresholdValue = 30;
@@ -27,6 +29,7 @@ namespace Khynan_Coding
         public StatType Type { get => type; }
 
         #region Public references
+        public float BaseValue { get => baseValue; }
         public float CurrentValue { get => currentValue; set => currentValue = Mathf.Clamp(value, 0, maxValue); }
         public float MaxValue { get => maxValue; set => maxValue = value; }
         public float CriticalThresholdValue { get => criticalThresholdValue; }
@@ -39,11 +42,72 @@ namespace Khynan_Coding
             m_Name = stringValue;
         }
 
-        public void SetStatCurrentValue(float value)
+        public void MatchCurrentValueWithBaseValue()
         {
-            if (CurrentValue == value || !needsToMatchMaxValueAtStart) { return; }
+            if (CurrentValue == BaseValue || !needsToMatchBaseValueAtStart) { return; }
 
-            CurrentValue = value;
+            MaxValue = BaseValue;
+            CurrentValue = BaseValue;
         }
+
+        public float CalculateCurrentValue()
+        {
+            float value = BaseValue;
+
+            //No modifier at all return the value
+            if (statModifiers.Count == 0)
+            {
+                return value;
+            }
+
+            //Modifiers are present, add them then return the correct value
+            for (int i = statModifiers.Count - 1; i >= 0; i--)
+            {
+                StatModifier modifier = statModifiers[i];
+
+                switch (statModifiers[i].ModifierType)
+                {
+                    case ModifierType.Flat:
+                        value += modifier.ModifierValue;
+                        break;
+                    case ModifierType.Percentage:
+                        value += 1 * (modifier.ModifierValue / 100);
+                        break;
+                }
+            }
+
+            //Set the max value corresponding to : Base value (+ modifiers)(if present)
+            MaxValue = value;
+
+            return value;
+        }
+
+        #region Stat modifiers methods
+        public void AddModifier(StatModifier modifier)
+        {
+            statModifiers.Add(modifier);
+
+            //Recalculate the value after adding a modifier
+            CurrentValue = CalculateCurrentValue();
+        }
+
+        public void RemoveSourceModifier(object source)
+        {
+            if (statModifiers.Count == 0)
+            {
+                Debug.LogError("This stat " + m_Name + " has no stat modifiers.");
+            }
+
+            for (int i = statModifiers.Count - 1; i >= 0; i--)
+            {
+                if (statModifiers[i].ModifierSource != source) { continue; }
+
+                statModifiers.RemoveAt(i);
+                //Recalculate the value after removing all modifiers from a source
+                CurrentValue = CalculateCurrentValue();
+                MaxValue = CurrentValue;
+            }
+        }
+        #endregion
     }
 }

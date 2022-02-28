@@ -39,7 +39,7 @@ namespace Khynan_Coding
             }
         }
 
-        public KeyCode GetInput(string actionName)
+        public KeyCode GetInputByName(string actionName)
         {
             if (!inputsMap || inputsMap.InputKeyDatas.Count == 0) 
             {
@@ -52,6 +52,22 @@ namespace Khynan_Coding
                 if (inputsMap.InputKeyDatas[i].Name != actionName) { continue; }
 
                 return inputsMap.InputKeyDatas[i].KeyCode;
+            }
+
+            return KeyCode.None;
+        }
+
+        public KeyCode GetInputByIndex(int index)
+        {
+            if (!inputsMap || inputsMap.InputKeyDatas.Count == 0)
+            {
+                Debug.LogError("Input map is not set or the key list is empty !");
+                return KeyCode.None;
+            }
+
+            if (inputsMap.InputKeyDatas.Count >= index)
+            {
+                return inputsMap.InputKeyDatas[index].KeyCode;
             }
 
             return KeyCode.None;

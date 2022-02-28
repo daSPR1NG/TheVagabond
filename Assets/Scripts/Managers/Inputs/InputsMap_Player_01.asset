@@ -13,8 +13,12 @@ MonoBehaviour:
   m_Name: InputsMap_Player_01
   m_EditorClassIdentifier: 
   inputKeyDatas:
+  - m_Name: InteractionMB
+    keyCode: 323
   - m_Name: Interaction
     keyCode: 101
+  - m_Name: AttackMB
+    keyCode: 324
   - m_Name: Pause
     keyCode: 27
   - m_Name: CameraLockState
@@ -29,3 +33,15 @@ MonoBehaviour:
     keyCode: 113
   - m_Name: MoveRight
     keyCode: 100
+  - m_Name: InventorySlot_1
+    keyCode: 49
+  - m_Name: InventorySlot_2
+    keyCode: 50
+  - m_Name: InventorySlot_3
+    keyCode: 51
+  - m_Name: InventorySlot_4
+    keyCode: 52
+  - m_Name: InventorySlot_5
+    keyCode: 53
+  - m_Name: InventorySlot_6
+    keyCode: 54

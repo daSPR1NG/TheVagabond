@@ -7,7 +7,7 @@ namespace Khynan_Coding
     {
         [Header("SETTINGS")]
         [SerializeField] private bool isDebuggingAPosition = false;
-        [SerializeField] private float debugRadiusValue = 1.0f;
+        [SerializeField] private float positionDebugRadiusValue = 1.0f;
         [SerializeField] private Color debugDrawColor = Color.red;
         [SerializeField] private Vector3 positionOffset = Vector3.zero;
 
@@ -30,7 +30,7 @@ namespace Khynan_Coding
 
             Gizmos.DrawWireCube(
                     new Vector3(transform.position.x + positionOffset.x, transform.position.y + positionOffset.y, transform.position.z + positionOffset.z),
-                    new Vector3(debugRadiusValue, debugRadiusValue, debugRadiusValue));
+                    new Vector3(positionDebugRadiusValue, positionDebugRadiusValue, positionDebugRadiusValue));
         }
 
         private void DebugColliderRadius()
@@ -40,13 +40,15 @@ namespace Khynan_Coding
             switch (isASphereCollider)
             {
                 case true:
-                    SphereCollider sphereCollider = (SphereCollider)colliderToDebug;
+                    SphereCollider sphereCollider = GetComponent<SphereCollider>();
 
                     Gizmos.DrawWireSphere(new Vector3(
                             transform.position.x + positionOffset.x,
                             transform.position.y + positionOffset.y,
                             transform.position.z + positionOffset.z),
                         sphereCollider.radius);
+
+                    Debug.Log("IS a sphere collider.");
                     break; 
                 case false:
                     Gizmos.DrawWireCube(new Vector3(

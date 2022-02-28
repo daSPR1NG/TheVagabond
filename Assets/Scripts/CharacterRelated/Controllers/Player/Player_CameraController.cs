@@ -10,8 +10,8 @@ namespace Khynan_Coding
         [SerializeField] private CameraLockState cameraLockState;
 
         #region Inputs
-        private KeyCode CameraLockStateInput => InputsManager.Instance.GetInput("CameraLockState");
-        private KeyCode CameraFocusInput => InputsManager.Instance.GetInput("CameraFocus");
+        private KeyCode CameraLockStateInput => InputsManager.Instance.GetInputByName("CameraLockState");
+        private KeyCode CameraFocusInput => InputsManager.Instance.GetInputByName("CameraFocus");
         #endregion
 
         [Space][Header("FOLLOWING SETTINGS")]

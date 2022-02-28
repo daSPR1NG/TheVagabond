@@ -7,13 +7,12 @@ namespace Khynan_Coding
         [Header("PRINCIPAL UI COMPONENTS")]
         [SerializeField] private GameObject pauseMenuComponent;
 
-        [Header("SCRIPTS USING UI")]
-        [SerializeField] private ResourcesManager resourcesManager;
-        [SerializeField] private PlayerInventory playerInventory;
+        private ResourcesManager _resourcesManager;
+        private CharacterGearInventory _characterInventory;
 
         #region Public references
-        public ResourcesManager ResourcesManager { get => resourcesManager; }
-        public PlayerInventory PlayerInventory { get => playerInventory; }
+        public ResourcesManager ResourcesManager { get => _resourcesManager; private set => _resourcesManager = value; }
+        public CharacterGearInventory CharacterInventory { get => _characterInventory; private set => _characterInventory = value; }
         #endregion
 
         #region Singleton
@@ -36,6 +35,9 @@ namespace Khynan_Coding
         private void OnEnable()
         {
             GameManager.OnGameStateChanged += TogglePauseMenu;
+
+            _resourcesManager = GameManager.Instance.ActivePlayer.GetComponent<ResourcesManager>();
+            _characterInventory = GameManager.Instance.ActivePlayer.GetComponent<CharacterGearInventory>();
         }
 
         private void OnDisable()

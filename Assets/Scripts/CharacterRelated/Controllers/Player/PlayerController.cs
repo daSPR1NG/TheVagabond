@@ -8,10 +8,10 @@ namespace Khynan_Coding
         Quaternion targetRotation;
 
         #region Inputs
-        private KeyCode MoveForward => InputsManager.Instance.GetInput("MoveForward");
-        private KeyCode MoveBackward => InputsManager.Instance.GetInput("MoveBackward");
-        private KeyCode MoveLeft => InputsManager.Instance.GetInput("MoveLeft");
-        private KeyCode MoveRight => InputsManager.Instance.GetInput("MoveRight");
+        private KeyCode MoveForward => InputsManager.Instance.GetInputByName("MoveForward");
+        private KeyCode MoveBackward => InputsManager.Instance.GetInputByName("MoveBackward");
+        private KeyCode MoveLeft => InputsManager.Instance.GetInputByName("MoveLeft");
+        private KeyCode MoveRight => InputsManager.Instance.GetInputByName("MoveRight");
         #endregion
 
         [Header("INPUT PRESSURE SETTINGS")]
@@ -34,57 +34,58 @@ namespace Khynan_Coding
 
         private void ProcessZQSDMovement()
         {
+            DirectionToMove = Vector3.zero;
+
             if (!GameManager.Instance.PlayerCanUseActions())
             {
                 return;
             }
 
-            DirectionToMove = Vector3.zero;
-
             UpdateInputPressureValue();
 
             #region Vertical Axis - Z, S
-            if (Helper.IsKeyPressed(KeyCode.Z) || Helper.IsKeyMaintained(MoveForward))
+            if (Helper.IsKeyPressedOrMaintained(MoveForward))
             {
                 DirectionToMove.z = 1;
             }
-            if (Helper.IsKeyPressed(KeyCode.S) || Helper.IsKeyMaintained(MoveBackward))
+            if (Helper.IsKeyPressedOrMaintained(MoveBackward))
             {
                 DirectionToMove.z = -1;
             }
             #endregion
 
             #region Horizontal Axis - Q, D
-            if (Helper.IsKeyPressed(KeyCode.Q) || Helper.IsKeyMaintained(MoveLeft))
+            if (Helper.IsKeyPressedOrMaintained(MoveLeft))
             {
                 DirectionToMove.x = -1;
             }
-            if (Helper.IsKeyPressed(KeyCode.D) || Helper.IsKeyMaintained(MoveRight))
+            if (Helper.IsKeyPressedOrMaintained(MoveRight))
             {
                 DirectionToMove.x = 1;
             }
             #endregion
 
             MovePlayerCharacter();
+
+            Debug.Log("Direction To Move == " + DirectionToMove);
         }
 
         private void MovePlayerCharacter()
         {
-            if (DirectionToMove != Vector3.zero)
+            if (DirectionToMove == Vector3.zero) { return; }
+
+            InteractionHandler.ResetInteraction();
+            Helper.ResetAgentDestination(NavMeshAgent);
+
+            UpdateTransformRotation();
+
+            if (CanUpdatePosition(transform.localRotation, targetRotation))
             {
-                InteractionHandler.ResetInteraction();
-                Helper.ResetAgentDestination(NavMeshAgent);
+                UpdateRigidbodyPosition(Rb, MaxMovementSpeed,
+                (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z
+                + Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized);
 
-                UpdateTransformRotation();
-
-                if (CanUpdatePosition(transform.localRotation, targetRotation))
-                {
-                    UpdateRigidbodyPosition(Rb, MaxMovementSpeed,
-                    (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z
-                    + Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized);
-
-                    SwitchState(MovingState);
-                }
+                SwitchState(MovingState);
             }
         }
 

@@ -18,6 +18,7 @@ namespace Khynan_Coding
         public Character_IdleState IdleState = new();
         public Character_MovingState MovingState = new();
         public Character_InteractionState InteractionState = new();
+        public Character_AttackState AttackState = new();
         #endregion
 
         #region Public references

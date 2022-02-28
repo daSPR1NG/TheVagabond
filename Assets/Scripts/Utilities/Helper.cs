@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Khynan_Coding
 {
@@ -128,6 +129,13 @@ namespace Khynan_Coding
             
             return false;
         }
+
+        public static bool IsKeyPressedOrMaintained(KeyCode key)
+        {
+            if (Input.GetKeyDown(key) || Input.GetKey(key)) return true;
+
+            return false;
+        }
         #endregion
 
         #region Cursor
@@ -206,6 +214,29 @@ namespace Khynan_Coding
             string seconds = Mathf.Floor(value % 60).ToString("00");
 
             return (minutes + " : " + seconds);
+        }
+        #endregion
+
+        #region UI
+        public static void SetImageSprite(Image image, Sprite sprite)
+        {
+            if (image.sprite == sprite) { return; }
+
+            image.sprite = sprite;
+        }
+
+        public static void ActivateUIWindow(GameObject window)
+        {
+            if (window.activeInHierarchy) { return; }
+
+            window.SetActive(true);
+        }
+
+        public static void DeactivateUIWindow(GameObject window)
+        {
+            if (!window.activeInHierarchy) { return; }
+
+            window.SetActive(false);
         }
         #endregion
     }

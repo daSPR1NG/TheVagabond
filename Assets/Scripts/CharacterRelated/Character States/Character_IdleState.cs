@@ -2,24 +2,24 @@ namespace Khynan_Coding
 {
     public class Character_IdleState : CharacterState
     {
-        CharacterController controller;
+        CharacterController _controller;
 
         public override void Init(StateManager stateManager)
         {
-            controller = stateManager.CharacterController;
+            _controller = stateManager.CharacterController;
         }
 
         public override void EnterState(StateManager stateManager)
         {
             Init(stateManager);
-            Helper.ResetAgentDestination(controller.NavMeshAgent);
+            Helper.ResetAgentDestination(_controller.NavMeshAgent);
 
             Helper.DebugMessage("Entering <IDLE> state", stateManager.transform);
         }
 
         public override void ExitState(StateManager stateManager)
         {
-            controller.ResetTimeSpentInIdleValue();
+            _controller.ResetTimeSpentInIdleValue();
 
             Helper.DebugMessage("Exiting <IDLE> state", stateManager.transform);
         }
@@ -28,7 +28,7 @@ namespace Khynan_Coding
         {
             base.ProcessState(stateManager);
 
-            controller.KeepTrackOfTimeSpentInIdle();
+            _controller.KeepTrackOfTimeSpentInIdle();
         }
     }
 }

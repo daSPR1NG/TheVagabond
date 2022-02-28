@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Khynan_Coding
 {
+    [RequireComponent(typeof(ResourceStats))]
     public class CollectableResource : InteractiveElement, IRespawnable
     {
         [Header("RESOURCE SETTINGS")]
@@ -17,6 +18,7 @@ namespace Khynan_Coding
 
         #region References
         private MeshCollider MeshCollider => GetComponent<MeshCollider>();
+        private ResourceStats ResourceStats => GetComponent<ResourceStats>();
         #endregion
 
         [System.Serializable]
@@ -47,6 +49,21 @@ namespace Khynan_Coding
             }
         }
 
+        private void Awake()
+        {
+            EnableStats();
+        }
+
+        private void OnEnable()
+        {
+            ResourceStats.OnDeathHappened += OnResourceDeath;
+        }
+
+        private void OnDisable()
+        {
+            ResourceStats.OnDeathHappened -= OnResourceDeath;
+        }
+
         protected override void Start() => base.Start();
 
         protected override void Update()
@@ -64,6 +81,19 @@ namespace Khynan_Coding
             if (ResourceAspects.Count == 0) { return; }
 
             SetDefaultAspect();
+        }
+
+        private void EnableStats()
+        {
+            ResourceStats resourceStats = GetComponent<ResourceStats>();
+
+            if (IEType != IEType.WithStats)
+            {
+                resourceStats.enabled = false;
+                return;
+            }
+            
+            resourceStats.enabled = true;
         }
 
         #region Interaction - Start / Exit
@@ -110,7 +140,7 @@ namespace Khynan_Coding
         protected override void OnInteractionCompleted(Transform interactionActor)
         {
             //Give resources to player
-            ResourcesManager ressourcesHandlerRef = InteractionActor.GetComponent<ResourcesManager>();
+            ResourcesManager ressourcesHandlerRef = interactionActor.GetComponent<ResourcesManager>();
             ressourcesHandlerRef.GiveResourcesToPlayer(resource);
 
             //Remove the given amount of this resource
@@ -122,6 +152,12 @@ namespace Khynan_Coding
             base.OnInteractionCompleted(interactionActor);
 
             _currentRespawnCooldown = respawnCooldown;
+        }
+
+        private void OnResourceDeath(Transform killer)
+        {
+            OnInteractionCompleted(ResourceStats.AttackerData);
+            Debug.Log("On resource death !");
         }
         #endregion
 
@@ -182,6 +218,11 @@ namespace Khynan_Coding
             resource.AddToCurrentValue(resource.StartingValue);
 
             SetDefaultAspect();
+
+            if(IEType == IEType.WithStats)
+            {
+                ResourceStats.GetStatByType(StatType.Health).CurrentValue = ResourceStats.GetStatByType(StatType.Health).MaxValue;
+            }
 
             //Add respawn animation
             //+ maybe VFX

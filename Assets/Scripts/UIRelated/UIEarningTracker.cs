@@ -11,13 +11,13 @@ namespace Khynan_Coding
         private void OnEnable()
         {
             UIManager.Instance.ResourcesManager.OnEarningResources += SendResourceEarningFeedback;
-            UIManager.Instance.PlayerInventory.OnAddingGear += SendGearEarningFeedback;
+            UIManager.Instance.CharacterInventory.OnAddingGear += SendGearEarningFeedback;
         }
 
         private void OnDisable()
         {
             UIManager.Instance.ResourcesManager.OnEarningResources -= SendResourceEarningFeedback;
-            UIManager.Instance.PlayerInventory.OnAddingGear -= SendGearEarningFeedback;
+            UIManager.Instance.CharacterInventory.OnAddingGear -= SendGearEarningFeedback;
         }
 
         private void SendResourceEarningFeedback(Resource resource)

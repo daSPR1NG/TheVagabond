@@ -8,7 +8,7 @@ namespace Khynan_Coding
     public class InteractionHandler : MonoBehaviour
     {
         public delegate void InteractionStartEventHandler(
-            InteractionType type, float currentDuration, float maxDuration, string actionName, bool isProgressive);
+            InteractionType type, float currentDuration, float maxDuration, string actionName, IEType interactiveElementType);
         public event InteractionStartEventHandler OnInteraction;
 
         public delegate void InteractionEndEventHandler();
@@ -21,16 +21,16 @@ namespace Khynan_Coding
         private Transform targetHit = null;
         private Transform currentTarget = null;
         private Transform closestTarget = null;
-        public bool isInteracting = false; // Debug
+        public bool IsInteracting = false; // Debug
 
         public bool HasATarget => CurrentTarget != null;
         public bool isWithinReachOfInteraction = false;
 
         #region Inputs
-        private KeyCode InteractionInput => InputsManager.Instance.GetInput("Interaction");
+        private KeyCode InteractionInput => InputsManager.Instance.GetInputByName("Interaction");
         #endregion
 
-        #region Components
+        #region Components & References
         NavMeshAgent NavMeshAgent => GetComponent<NavMeshAgent>();
         private CharacterController Controller => GetComponent<CharacterController>();
         public Transform TargetHit { get => targetHit; private set => targetHit = value; }
@@ -47,7 +47,10 @@ namespace Khynan_Coding
                 return;
             }
 
-            if (Helper.IsRightClickPressed()) { ShootRaycastEntityDetection(); }
+            if (Helper.IsKeyPressed(InputsManager.Instance.GetInputByName("InteractionMB"))) 
+            { 
+                ShootRaycastEntityDetection(); 
+            }
 
             TryToInteractWithTheClosestTarget();
 
@@ -95,8 +98,10 @@ namespace Khynan_Coding
         private void AssignTarget(Transform hitTransform)
         {
             InteractiveElement interactiveElement = hitTransform.GetComponent<InteractiveElement>();
+            bool isInteractiveElementOfTheCorrectType = 
+                interactiveElement.IEType == IEType.Progressive || interactiveElement.IEType == IEType.Direct;
 
-            if (!interactiveElement || !interactiveElement.IsInteractive) { return; }
+            if (!interactiveElement || !interactiveElement.IsInteractive || !isInteractiveElementOfTheCorrectType) { return; }
 
             //If last target wasn't known last = current or LastTarget was known but it is not the same as the target hit
             if (!CurrentTarget || CurrentTarget != TargetHit)
@@ -117,7 +122,7 @@ namespace Khynan_Coding
         #region Distance with target - Move, target reached check, distance calculation
         private void MoveToTarget(Transform target)
         {
-            if (!HasATarget || isInteracting) { return; }
+            if (!HasATarget || IsInteracting) { return; }
 
             Controller.MatchCurrentMSToThisValue(Controller.MaxMovementSpeed, Time.deltaTime);
 
@@ -138,7 +143,7 @@ namespace Khynan_Coding
                     0, 
                     interactiveElement.CollectionDuration, 
                     interactiveElement.InteractionName,
-                    interactiveElement.IsProgressive);
+                    interactiveElement.IEType);
 
                 Debug.Log("Target has been reached, the interaction is starting");
 
@@ -166,6 +171,8 @@ namespace Khynan_Coding
         {
             Debug.Log("Reset interaction.");
 
+            if (!ClosestTarget) { SetClosestTarget(null); }
+            
             if (!CurrentTarget) { return; }
 
             InteractiveElement interactiveEntity = CurrentTarget.GetComponent<InteractiveElement>();
@@ -174,7 +181,8 @@ namespace Khynan_Coding
             CurrentTarget = null;
             OnInteractionEnd?.Invoke();
 
-            if (!interactionIsComplete) { return; }
+            //A garder idk
+            //if (!interactionIsComplete) { return; }
 
             Controller.SwitchState(Controller.IdleState);
         }
@@ -186,10 +194,10 @@ namespace Khynan_Coding
 
             switch (interactionType)
             {
-                case InteractionType.Logging:
+                case InteractionType.Harvesting:
                     animatorAssistant.SetAnimatorRunTimeController(1);
                     break;
-                case InteractionType.Harvesting:
+                case InteractionType.Logging:
                     animatorAssistant.SetAnimatorRunTimeController(2);
                     break;
                 case InteractionType.Mining:

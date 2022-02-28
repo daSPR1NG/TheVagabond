@@ -11,7 +11,7 @@ namespace Khynan_Coding
         [SerializeField] private bool isUsingFilledProgressBarType = true;
         [Tooltip("Notes that the element 0 is always the filled progress bar type, the element 1 is always the other type")]
         [Space][SerializeField] private List<ProgressBarElements> progressBarElements = new();
-        private bool _isProgressive = true;
+        private IEType _interactiveElementType;
 
         [Header("FILL IMAGE SETTINGS")]
         [SerializeField] private bool doesItFillsPositively = false;
@@ -90,10 +90,9 @@ namespace Khynan_Coding
         protected virtual void Start() => HideProgressBar();
 
         #region Initialization - Action Name / Fill Amount
-        protected virtual void Init(
-            InteractionType type, float currentValue, float maxValue, string attachedTextContent = null, bool isProgressive = false)
+        protected virtual void Init(InteractionType type, float currentValue, float maxValue, string attachedTextContent = null, IEType interactiveElementType = IEType.Unassigned)
         {
-            if (!isProgressive) { return; }
+            if (interactiveElementType != IEType.Progressive) { return; }
 
             DisplayProgressBar(type);
             InitImageFillAmount(currentValue, maxValue);
@@ -103,7 +102,7 @@ namespace Khynan_Coding
                 InitProgressBarActionNameText(attachedTextContent);
             }
 
-            _isProgressive = isProgressive;
+            _interactiveElementType = interactiveElementType;
         }
 
         private void InitProgressBarActionNameText(string stringValue)
@@ -134,7 +133,11 @@ namespace Khynan_Coding
         #region Update / Set - Fill Amount value
         protected virtual void UpdateImageFillAmout(float maxValue)
         {
-            if (!progressBarElements[0].ProgressBarContentToActivate.activeInHierarchy || !_isProgressive) { return; }
+            if (!progressBarElements[0].ProgressBarContentToActivate.activeInHierarchy || _interactiveElementType != IEType.Progressive) 
+            {
+                Debug.Log("The progres bar is not active or the interaction type is not progressive. The fill amount won't update.");
+                return; 
+            }
 
             Debug.Log("Update image fill amount");
 

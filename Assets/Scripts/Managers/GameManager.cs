@@ -46,7 +46,7 @@ namespace Khynan_Coding
 
         void Update()
         {
-            if (Helper.IsKeyPressed(InputsManager.Instance.GetInput("Pause")))
+            if (Helper.IsKeyPressed(InputsManager.Instance.GetInputByName("Pause")))
             {
                 ToggleGameState();
             }

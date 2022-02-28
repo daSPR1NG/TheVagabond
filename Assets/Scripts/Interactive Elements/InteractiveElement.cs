@@ -4,7 +4,12 @@ namespace Khynan_Coding
 {
     public enum InteractionType
     {
-        Unassigned, Logging, Harvesting, Mining, Talking
+        Unassigned, Harvesting, Logging, Mining, Talking,
+    }
+
+    public enum IEType
+    {
+        Unassigned, Direct, Progressive, WithStats,
     }
 
     [DisallowMultipleComponent]
@@ -13,16 +18,15 @@ namespace Khynan_Coding
         [Header("SETUP")]
         [SerializeField] private string interactionName = "[Type HERE]";
         [SerializeField] private InteractionType interactionType = InteractionType.Unassigned;
-        [SerializeField] private bool isProgressive = true;
+        [SerializeField] private IEType interactiveElementType = IEType.Unassigned;
         private Transform _interactionActor;
         private bool _isInteractive = true;
 
         [Space][Header("VALUE SETTINGS")]
         [Tooltip("This value defines the number of time the interaction would be executed. " +
-            "It multiplies the associated animation duration by its value")]
+            "It multiplies the associated animation duration by this value")]
         [SerializeField] private int interactionRepeatTime = 2;
         [SerializeField] private float minimumDistanceToInteract = 1.25f;
-        
         private float _collectionDuration = 1;
         private float _currentCollectionDuration = 0;
 
@@ -36,13 +40,13 @@ namespace Khynan_Coding
         #region References
         public string InteractionName { get => interactionName; }
         public InteractionType InteractionType { get => interactionType; }
+        public IEType IEType { get => interactiveElementType; }
         public float MinimumDistanceToInteract { get => minimumDistanceToInteract; }
         public float CollectionDuration { get => _collectionDuration; private set => _collectionDuration = value; }
         public bool AnInteractionIsProcessing { get => _anInteractionIsProcessing; private set => _anInteractionIsProcessing = value; }
         public OutlineModule OutlineComponent => transform.GetChild(0).GetComponent<OutlineModule>();
         protected Transform InteractionActor { get => _interactionActor; private set => _interactionActor = value; }
         protected int InteractionRepeatTime { get => interactionRepeatTime; }
-        public bool IsProgressive { get => isProgressive; }
         public bool IsItTargetedByPlayer { get => _isItTargetedByPlayer; set => _isItTargetedByPlayer = value; }
         public bool IsInteractive { get => _isInteractive; private set => _isInteractive = value; }
         #endregion
@@ -66,13 +70,20 @@ namespace Khynan_Coding
             InteractionHandler interactionActorInteractionHandler = InteractionActor.GetComponent<InteractionHandler>();
             interactionActorInteractionHandler.SetCorrectInteractionAnimation(InteractionType);
 
-            CollectionDuration = GetCollectionDuration();
-
-            _currentCollectionDuration = 0;
+            if (IEType == IEType.Progressive)
+            {
+                ResetCollectionDuration();
+            }
 
             if (AnInteractionIsProcessing) { return; }
 
             AnInteractionIsProcessing = true;
+        }
+
+        private void ResetCollectionDuration()
+        {
+            CollectionDuration = GetCollectionDuration();
+            _currentCollectionDuration = 0;
         }
 
         protected float GetInteractionAnimationLength()
@@ -112,6 +123,8 @@ namespace Khynan_Coding
         #region Interaction - Progression
         protected virtual void InteractionProgression()
         {
+            if (IEType != IEType.Progressive) { return; }
+
             UpdateInteractionProgressionTimer();
         }
 

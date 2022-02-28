@@ -16,7 +16,7 @@ namespace Khynan_Coding
 
         private void OnTriggerStay(Collider other)
         {
-            if (!InteractiveElement.IsInteractive) { return; }
+            if (!InteractiveElement.IsInteractive || InteractiveElement.IEType == IEType.WithStats) { return; }
 
             if (!InteractiveElement.OutlineComponent.enabled && !InteractiveElement.AnInteractionIsProcessing) 
             { 
@@ -29,6 +29,8 @@ namespace Khynan_Coding
                 InteractiveElement.OutlineComponent.enabled = false;
                 OnTriggerExit?.Invoke();
             }
+
+            SetPlayerInteractionDatas(other.transform, transform.parent, true);
         }
 
         #region Add method - OnTriggerEnter
@@ -36,7 +38,7 @@ namespace Khynan_Coding
         {
             base.AddFoundTransform(other);
 
-            if (!InteractiveElement.IsInteractive) { return; }
+            if (!InteractiveElement.IsInteractive || InteractiveElement.IEType == IEType.WithStats) { return; }
 
             SetPlayerInteractionDatas(other, transform.parent, true);
 
@@ -60,7 +62,7 @@ namespace Khynan_Coding
         {
             base.RemoveATransformFromTheList(other);
 
-            if (!InteractiveElement.IsInteractive) { return; }
+            if (!InteractiveElement.IsInteractive || InteractiveElement.IEType == IEType.WithStats) { return; }
 
             SetPlayerInteractionDatas(other, null, false);
 
@@ -69,11 +71,16 @@ namespace Khynan_Coding
         }
         #endregion
 
-        private void SetPlayerInteractionDatas(Transform other, Transform closestTransform, bool value)
+        private void SetPlayerInteractionDatas(Transform targetFound, Transform parent, bool value)
         {
-            InteractionHandler otherInteractionHandler = other.GetComponent<InteractionHandler>();
-            otherInteractionHandler.isWithinReachOfInteraction = value;
-            otherInteractionHandler.SetClosestTarget(closestTransform);
+            InteractionHandler otherInteractionHandler = targetFound.GetComponent<InteractionHandler>();
+
+            if(!otherInteractionHandler.ClosestTarget || otherInteractionHandler.ClosestTarget && otherInteractionHandler.ClosestTarget != parent)
+            {
+                otherInteractionHandler.isWithinReachOfInteraction = value;
+                otherInteractionHandler.SetClosestTarget(parent);
+                Debug.Log("TRIGGER STAY");
+            }
         }
     }
 }

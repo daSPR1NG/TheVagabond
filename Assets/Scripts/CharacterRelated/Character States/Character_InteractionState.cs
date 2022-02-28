@@ -15,16 +15,16 @@ namespace Khynan_Coding
         {
             Init(stateManager);
 
-            interactionHandler.isInteracting = true;
-            AnimatorHelper.PlayThisAnimationOnThisLayer(controller.Animator, 1, 1f, "IsInteracting", interactionHandler.isInteracting);
+            interactionHandler.IsInteracting = true;
+            AnimatorHelper.PlayThisAnimationOnThisLayer(controller.Animator, 1, 1f, "IsInteracting", interactionHandler.IsInteracting);
 
             Helper.DebugMessage("Entering <INTERACTION> state", stateManager.transform);
         }
 
         public override void ExitState(StateManager stateManager)
         {
-            interactionHandler.isInteracting = false;
-            AnimatorHelper.PlayThisAnimationOnThisLayer(controller.Animator, 1, 1f, "IsInteracting", interactionHandler.isInteracting);
+            interactionHandler.IsInteracting = false;
+            AnimatorHelper.PlayThisAnimationOnThisLayer(controller.Animator, 1, 0f, "IsInteracting", interactionHandler.IsInteracting);
 
             Helper.DebugMessage("Exiting <INTERACTION> state", stateManager.transform);
         }

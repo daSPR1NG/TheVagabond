@@ -2,11 +2,11 @@ namespace Khynan_Coding
 {
     public class Character_MovingState : CharacterState
     {
-        CharacterController controller;
+        CharacterController _controller;
 
         public override void Init(StateManager stateManager)
         {
-            controller = stateManager.CharacterController;
+            _controller = stateManager.CharacterController;
         }
 
         public override void EnterState(StateManager stateManager)
@@ -14,7 +14,7 @@ namespace Khynan_Coding
             Init(stateManager);
 
             stateManager.CharacterIsMoving = true;
-            AnimatorHelper.SetAnimatorBooleanParameter(controller.Animator, "IsMoving", stateManager.CharacterIsMoving);
+            AnimatorHelper.SetAnimatorBooleanParameter(_controller.Animator, "IsMoving", stateManager.CharacterIsMoving);
             
             Helper.DebugMessage("Entering <MOVING> state", stateManager.transform); 
         }
@@ -22,7 +22,7 @@ namespace Khynan_Coding
         public override void ExitState(StateManager stateManager)
         {
             stateManager.CharacterIsMoving = false;
-            AnimatorHelper.SetAnimatorBooleanParameter(controller.Animator, "IsMoving", stateManager.CharacterIsMoving);
+            AnimatorHelper.SetAnimatorBooleanParameter(_controller.Animator, "IsMoving", stateManager.CharacterIsMoving);
 
             Helper.DebugMessage("Exiting <MOVING> state", stateManager.transform);
         }
@@ -31,16 +31,16 @@ namespace Khynan_Coding
         {
             base.ProcessState(stateManager);
 
-            if (!controller.IsCharacterMoving)
+            if (!_controller.IsCharacterMoving)
             {
                 Helper.DebugMessage("Destination Reached !");
-                stateManager.SwitchState(controller.IdleState);
+                stateManager.SwitchState(_controller.IdleState);
                 return;
             }
 
-            controller.UpdateCharacterNavMeshAgentRotation(stateManager.NavMeshAgent, stateManager.transform, controller.RotationSpeed);
+            _controller.UpdateCharacterNavMeshAgentRotation(stateManager.NavMeshAgent, stateManager.transform, _controller.RotationSpeed);
 
-            controller.SetMovementAnimationValue();
+            _controller.SetMovementAnimationValue();
         }
     }
 }

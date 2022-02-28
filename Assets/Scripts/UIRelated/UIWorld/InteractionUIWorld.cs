@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,9 +10,10 @@ namespace Khynan_Coding
         [Header("SETUP")]
         [SerializeField] private TMP_Text keyText;
         [SerializeField] private Image interactionActionImage;
+        [SerializeField] private List<Sprite> interactionActionSprites;
         [SerializeField] private GameObject contentGO;
-        [SerializeField] private InteractionDetectionZone interactionDetectionZone;
-
+        private InteractionDetectionZone interactionDetectionZone;
+        private InteractionType interactionType = InteractionType.Unassigned;
 
         [Header("OFFSET SETTINGS")]
         [SerializeField] private Vector3 offsetPosition = Vector3.zero;
@@ -22,6 +24,12 @@ namespace Khynan_Coding
         private Animator Animator => GetComponent<Animator>();
         private Canvas Canvas => GetComponent<Canvas>();
         #endregion
+
+        private void Awake()
+        {
+            interactionDetectionZone = transform.parent.GetComponent<InteractionDetectionZone>();
+            interactionType = transform.parent.parent.GetComponent<InteractiveElement>().InteractionType;
+        }
 
         private void OnEnable()
         {
@@ -43,8 +51,8 @@ namespace Khynan_Coding
         private void Init()
         {
             Canvas.worldCamera = Helper.GetMainCamera();
-            SetKeyText(InputsManager.Instance.GetInput("Interaction").ToString());
-            //HideContent();
+            SetKeyText(InputsManager.Instance.GetInputByName("Interaction").ToString());
+            SetInteractionActionImage(interactionType);
         }
 
         private void SetKeyText(string value)
@@ -84,6 +92,31 @@ namespace Khynan_Coding
 
             AnimatorHelper.SetAnimatorBooleanParameter(Animator, "FadeOut", true);
             AnimatorHelper.SetAnimatorBooleanParameter(Animator, "IsEnabled", false);
+        }
+
+        private void SetInteractionActionImage(InteractionType type)
+        {
+            if (interactionActionSprites.Count == 0 || type == InteractionType.Unassigned)
+            {
+                Debug.LogError("Be careful, the sprite list is empty or the interaction type is unassigned.", transform);
+                return;
+            }
+
+            switch (type)
+            {
+                case InteractionType.Harvesting:
+                    Helper.SetImageSprite(interactionActionImage, interactionActionSprites[0]);
+                    break;
+                case InteractionType.Logging:
+                    Helper.SetImageSprite(interactionActionImage, interactionActionSprites[1]);
+                    break;
+                case InteractionType.Mining:
+                    Helper.SetImageSprite(interactionActionImage, interactionActionSprites[2]);
+                    break;
+                case InteractionType.Talking:
+                    Helper.SetImageSprite(interactionActionImage, interactionActionSprites[3]);
+                    break;
+            }
         }
 
         #region Editor - OnValidate
