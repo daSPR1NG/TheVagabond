@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Gear_Pickaxe_Tier_0
   m_EditorClassIdentifier: 
   gearName: Gear_Pickaxe_Tier_0
-  gearType: 3
+  gearType: 1
+  gearSubType: 0
   gearTier: 1
+  gearAOC: {fileID: 0}
   gearSpriteIcon: {fileID: 0}
   gearRecipe: {fileID: 11400000, guid: 4942d7e8284043342931bc05b1bfb352, type: 2}
   gearStatModifiers:

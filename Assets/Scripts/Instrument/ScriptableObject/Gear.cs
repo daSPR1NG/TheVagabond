@@ -28,8 +28,9 @@ namespace Khynan_Coding
         [SerializeField] private AnimatorOverrideController gearAOC;
         [SerializeField] private Sprite gearSpriteIcon;
         [SerializeField] private Recipe gearRecipe;
+
+        [Header("STATS SECTION")]
         [SerializeField] private List<StatModifier> gearStatModifiers = new();
-        
 
         #region Public references
         public string GearName { get => gearName; set => gearName = value; }

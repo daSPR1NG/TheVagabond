@@ -31,6 +31,16 @@ namespace Khynan_Coding
             Init();
         }
 
+        private void Update()
+        {
+            HandleGearInventoryInputs(_characterInventory.InventorySlot1, 0);
+            HandleGearInventoryInputs(_characterInventory.InventorySlot2, 1);
+            HandleGearInventoryInputs(_characterInventory.InventorySlot3, 2);
+            HandleGearInventoryInputs(_characterInventory.InventorySlot4, 3);
+            HandleGearInventoryInputs(_characterInventory.InventorySlot5, 4);
+            HandleGearInventoryInputs(_characterInventory.InventorySlot6, 5);
+        }
+
         #region Initialization
         void Init()
         {
@@ -77,7 +87,24 @@ namespace Khynan_Coding
             }
         }
 
-        #region Deselection
+        #region Slot selection & deselection
+        private void HandleGearInventoryInputs(KeyCode keyCode, int slotIndex)
+        {
+            if (!_gearSlots[slotIndex].GearInSlot)
+            {
+                Debug.Log("No gear in this slot, can't equip.");
+                return;
+            }
+
+            if (Helper.IsKeyPressed(keyCode))
+            {
+                DeselectEachGearSlots();
+
+                _characterInventory.EquipAGear(_characterInventory.CharacterGears[slotIndex]);
+                _gearSlots[slotIndex].SelectButton();
+            }
+        }
+
         public void DeselectEachGearSlots()
         {
             if (_gearSlots.Count == 0)

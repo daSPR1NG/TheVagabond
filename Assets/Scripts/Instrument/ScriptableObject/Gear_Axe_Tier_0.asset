@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gearName: Gear_Axe_Tier_0
   gearType: 1
-  gearSubType: 0
+  gearSubType: 1
   gearTier: 1
   gearAOC: {fileID: 22100000, guid: 3a8ce407bf127a94dae8fdcef4aa728e, type: 2}
   gearSpriteIcon: {fileID: 21300000, guid: b3a100d8344187049b3f8b5c9e5aba88, type: 3}
@@ -22,4 +22,10 @@ MonoBehaviour:
   gearStatModifiers:
   - modifierValue: 15
     modifiedStatType: 2
+    modifierType: 2
+  - modifierValue: 15
+    modifiedStatType: 6
+    modifierType: 1
+  - modifierValue: 15
+    modifiedStatType: 5
     modifierType: 2

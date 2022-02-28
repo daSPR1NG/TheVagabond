@@ -5,7 +5,7 @@ namespace Khynan_Coding
 {
     public enum StatType
     {
-        Unassigned, Health, MovementSpeed, GatherSpeed, AttackSpeed
+        Unassigned, Health, MovementSpeed, GatherSpeed, AttackSpeed, AttackRange, AttackDamage
     }
 
     [System.Serializable]
@@ -98,11 +98,13 @@ namespace Khynan_Coding
                 Debug.LogError("This stat " + m_Name + " has no stat modifiers.");
             }
 
-            for (int i = statModifiers.Count - 1; i >= 0; i--)
+            for (int i = 0; i < statModifiers.Count; i++)
             {
                 if (statModifiers[i].ModifierSource != source) { continue; }
 
+                Debug.Log("Remove stat modifier " + statModifiers[i].ModifiedStatType.ToString() + " from " + statModifiers[i].ModifierSource);
                 statModifiers.RemoveAt(i);
+
                 //Recalculate the value after removing all modifiers from a source
                 CurrentValue = CalculateCurrentValue();
                 MaxValue = CurrentValue;

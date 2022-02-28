@@ -18,6 +18,15 @@ namespace Khynan_Coding
 
         public List<Gear> CharacterGears { get => characterGears; private set => characterGears = value; }
 
+        #region Inputs
+        public KeyCode InventorySlot1 => InputsManager.Instance.GetInputByName("InventorySlot_1");
+        public KeyCode InventorySlot2 => InputsManager.Instance.GetInputByName("InventorySlot_2");
+        public KeyCode InventorySlot3 => InputsManager.Instance.GetInputByName("InventorySlot_3");
+        public KeyCode InventorySlot4 => InputsManager.Instance.GetInputByName("InventorySlot_4");
+        public KeyCode InventorySlot5 => InputsManager.Instance.GetInputByName("InventorySlot_5");
+        public KeyCode InventorySlot6 => InputsManager.Instance.GetInputByName("InventorySlot_6");
+        #endregion
+
         #region Public references
         private CharacterStats CharacterStats => GetComponent<CharacterStats>();
         public int GearHeldLimit { get => gearHeldLimit; }
@@ -31,6 +40,8 @@ namespace Khynan_Coding
 
         protected virtual void Update()
         {
+            if (!GameManager.Instance.PlayerCanUseActions()) { return; }
+
             if (Input.GetKeyDown(KeyCode.N))
             {
                 AddGear(gearExemple);
@@ -59,7 +70,7 @@ namespace Khynan_Coding
             }
 
             CharacterGears.Add(gear);
-            AddGearStatModifiers(gear);
+            //AddGearStatModifiers(gear);
 
             OnAddingGear?.Invoke(gear);
         }
@@ -98,21 +109,21 @@ namespace Khynan_Coding
 
         private void AddOrRemoveModifierToThisStat(Gear gear, bool doRemove)
         {
-            for (int j = 0; j < gear.GearStatModifiers.Count; j++)
+            for (int i = 0; i < gear.GearStatModifiers.Count; i++)
             {
                 if (doRemove)
                 {
-                    CharacterStats.GetStatByType(gear.GearStatModifiers[j].ModifiedStatType).RemoveSourceModifier(gear);
+                    CharacterStats.GetStatByType(gear.GearStatModifiers[i].ModifiedStatType).RemoveSourceModifier(gear);
                     Debug.Log(
                         "Gear modifier(s) has/ve been added upon adding or removing | doRemove = " + doRemove + " " + gear.GearName);
-                    return;
+                    continue;
                 }
 
-                CharacterStats.GetStatByType(gear.GearStatModifiers[j].ModifiedStatType).AddModifier(new StatModifier(
-                    gear.GearStatModifiers[j].ModifierType,
-                    gear.GearStatModifiers[j].ModifierValue,
+                CharacterStats.GetStatByType(gear.GearStatModifiers[i].ModifiedStatType).AddModifier(new StatModifier(
+                    gear.GearStatModifiers[i].ModifierType,
+                    gear.GearStatModifiers[i].ModifierValue,
                     gear,
-                    gear.GearStatModifiers[j].ModifiedStatType));
+                    gear.GearStatModifiers[i].ModifiedStatType));
 
                 Debug.Log("Gear modifier(s) has/ve been added upon adding or removing | doRemove = " + doRemove + " " + gear.GearName);
             }
@@ -121,7 +132,18 @@ namespace Khynan_Coding
 
         public void EquipAGear(Gear gear)
         {
+            if (characterGears.Count >= 1)
+            {
+                for (int i = 0; i < characterGears.Count; i++)
+                {
+                    RemoveGearStatModifiers(characterGears[i]);
+                }
+            }
+
+            //if (CurrentEquippedGear) { RemoveGearStatModifiers(CurrentEquippedGear); }
+
             CurrentEquippedGear = gear;
+            AddGearStatModifiers(gear);
         }
     }
 }

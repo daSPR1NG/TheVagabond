@@ -29,8 +29,6 @@ namespace Khynan_Coding
 
             AnimatorHelper.PlayThisAnimationOnThisLayer(
                 _controller.Animator, 2, 0f, "IsAttacking", _characterCombatSystem.IsAttacking);
-            //AnimatorHelper.SetAnimatorBooleanParameter(
-            //    _controller.Animator, "IsAttacking", _characterCombatSystem.IsAttacking);
 
             Helper.DebugMessage("Exiting <ATTACK> state", stateManager.transform);
         }

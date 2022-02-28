@@ -9238,6 +9238,22 @@ MonoBehaviour:
     statModifiers: []
     currentValue: 150
     criticalThresholdValue: 0
+  - m_Name: AttackDamage
+    type: 6
+    needsToMatchBaseValueAtStart: 1
+    baseValue: 1
+    maxValue: 1
+    statModifiers: []
+    currentValue: 1
+    criticalThresholdValue: 0
+  - m_Name: AttackRange
+    type: 5
+    needsToMatchBaseValueAtStart: 1
+    baseValue: 1
+    maxValue: 1
+    statModifiers: []
+    currentValue: 1
+    criticalThresholdValue: 0
   - m_Name: AttackSpeed
     type: 4
     needsToMatchBaseValueAtStart: 1

@@ -63,7 +63,8 @@ namespace Khynan_Coding
 
                 CharacterStats otherStats = transformFound[i].GetComponent<CharacterStats>();
 
-                otherStats.TakeDamage(transformFound[i], characterStats.transform, 15);
+                otherStats.TakeDamage(
+                    transformFound[i], characterStats.transform, characterStats.GetStatByType(StatType.AttackDamage).CurrentValue);
             }
 
             gameObject.SetActive(false);

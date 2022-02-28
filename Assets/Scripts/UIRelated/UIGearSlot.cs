@@ -68,7 +68,7 @@ namespace Khynan_Coding
 
         public override void OnPointerClick(PointerEventData eventData)
         {
-            if (!GearInSlot) { return; }
+            if (!GearInSlot || IsSelected) { return; }
 
             _UIInventorySlots.DeselectEachGearSlots();
             _UIInventorySlots.CharacterInventory.EquipAGear(gearInSlot);
