@@ -67,14 +67,14 @@ namespace Khynan_Coding
 
             MovePlayerCharacter();
 
-            Debug.Log("Direction To Move == " + DirectionToMove);
+            //Debug.Log("Direction To Move == " + DirectionToMove);
         }
 
         private void MovePlayerCharacter()
         {
             if (DirectionToMove == Vector3.zero) { return; }
 
-            InteractionHandler.ResetInteraction();
+            InteractionHandler.ResetInteraction(true);
             Helper.ResetAgentDestination(NavMeshAgent);
 
             UpdateTransformRotation();
@@ -82,8 +82,8 @@ namespace Khynan_Coding
             if (CanUpdatePosition(transform.localRotation, targetRotation))
             {
                 UpdateRigidbodyPosition(Rb, MaxMovementSpeed,
-                (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z
-                + Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized);
+                    (Helper.GetMainCameraForwardDirection(0) * DirectionToMove.z).normalized 
+                    + (Helper.GetMainCameraRightDirection(0) * DirectionToMove.x).normalized);
 
                 SwitchState(MovingState);
             }

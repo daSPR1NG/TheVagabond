@@ -11,30 +11,21 @@ namespace Khynan_Coding
         private void OnEnable()
         {
             UIManager.Instance.ResourcesManager.OnEarningResources += SendResourceEarningFeedback;
-            UIManager.Instance.CharacterInventory.OnAddingGear += SendGearEarningFeedback;
         }
 
         private void OnDisable()
         {
             UIManager.Instance.ResourcesManager.OnEarningResources -= SendResourceEarningFeedback;
-            UIManager.Instance.CharacterInventory.OnAddingGear -= SendGearEarningFeedback;
         }
 
-        private void SendResourceEarningFeedback(Resource resource)
+        private void SendResourceEarningFeedback(EarnData earnData)
         {
             Debug.Log("Resource Earn feedback");
 
-            CreateEarningCompartment(resource, null);
-        }
-        
-        private void SendGearEarningFeedback(Gear gear)
-        {
-            Debug.Log("Gear Earn feedback");
-
-            CreateEarningCompartment(null, gear);
+            CreateEarningCompartment(earnData);
         }
 
-        private void CreateEarningCompartment(Resource resource, Gear gear)
+        private void CreateEarningCompartment(EarnData earnData)
         {
             if (!earningCompartmentPrefab) 
             { 
@@ -46,7 +37,7 @@ namespace Khynan_Coding
 
             UIEarningCompartment UIEarningCompartment = instance.GetComponent<UIEarningCompartment>();
 
-            UIEarningCompartment.SetCompartment(resource, gear);
+            UIEarningCompartment.SetCompartment(earnData);
         }
     }
 }

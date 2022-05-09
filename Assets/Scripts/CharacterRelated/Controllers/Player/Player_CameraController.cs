@@ -90,6 +90,7 @@ namespace Khynan_Coding
             _offsetFromCharacter = transform.position;
         }
 
+        private Vector3 refPos;
         public void FollowCharacter(Transform targetToFollow)
         {
             if (!CameraIsLocked || !_TargetStateManager) { return; }
@@ -98,7 +99,7 @@ namespace Khynan_Coding
             Vector3 desiredPos = targetToFollow.position + _offsetFromCharacter;
 
             Vector3 smoothedPos = 
-                Vector3.SmoothDamp(transform.position, desiredPos, ref desiredPos, Time.fixedDeltaTime * FollowingSpeed);
+                Vector3.SmoothDamp(transform.position, desiredPos, ref refPos, Time.fixedDeltaTime * FollowingSpeed);
             transform.position = smoothedPos;
         }
 
@@ -211,15 +212,15 @@ namespace Khynan_Coding
         {
             if (!isScrollingEnabled && Input.mouseScrollDelta.y == 0) { return; }
 
-            if (Input.mouseScrollDelta.y > 0)
+            if (/*Input.mouseScrollDelta.y > 0*/ Input.GetKeyDown(KeyCode.KeypadPlus))
             {
-                _cameraScrollValue -= scrollStep * Time.deltaTime * scrollSensitivity * 1.75f;
+                _cameraScrollValue -= scrollStep * Time.deltaTime * scrollSensitivity * 1.5f;
                 cameraXRotation -= scrollStep * Time.deltaTime * scrollSensitivity * 2;
                 cameraYPosition -= scrollStep * Time.deltaTime * scrollSensitivity;
             }
-            if (Input.mouseScrollDelta.y < 0)
+            if (/*Input.mouseScrollDelta.y < 0*/ Input.GetKeyDown(KeyCode.KeypadMinus))
             {
-                _cameraScrollValue += scrollStep * Time.deltaTime * scrollSensitivity * 1.75f;
+                _cameraScrollValue += scrollStep * Time.deltaTime * scrollSensitivity * 1.5f;
                 cameraXRotation += scrollStep * Time.deltaTime * scrollSensitivity * 2;
                 cameraYPosition += scrollStep * Time.deltaTime * scrollSensitivity;
             }

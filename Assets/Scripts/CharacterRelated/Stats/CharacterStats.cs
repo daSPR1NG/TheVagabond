@@ -9,44 +9,19 @@ namespace Khynan_Coding
     }
 
     [DisallowMultipleComponent]
-    public class CharacterStats : MonoBehaviour, IDamageable, IHealable
+    public class CharacterStats : MonoBehaviour
     {
-        public delegate void HealthValueChanged(float currentHealth, float maxHealth);
-        public event HealthValueChanged OnDamageTaken;
-        public event HealthValueChanged OnHealReceived;
-
-        public delegate void DeathHappened(Transform killer);
-        public event DeathHappened OnDeathHappened;
-
         [SerializeField] private CharacterType characterType = CharacterType.Unassigned;
-        [SerializeField] private float healthPercentage = 0;
         [SerializeField] private List<Stat> stats = new();
-        private Transform _attackerData;
 
         #region Public references
         public CharacterType CharacterType { get => characterType; }
         public List<Stat> Stats { get => stats; set => stats = value; }
-        public bool CharacterIsDead => GetStatByType(StatType.Health).CurrentValue <= 0;
-        public float HealthPercentage { get => healthPercentage; protected set => healthPercentage = value; }
-        public Transform AttackerData { get => _attackerData; private set => _attackerData = value; }
         #endregion
 
         protected virtual void Start()
         {
             InitStatsValue();
-        }
-
-        protected virtual void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.T))
-            {
-                TakeDamage(transform, transform, 10);
-            }
-
-            if (Input.GetKeyDown(KeyCode.H))
-            {
-                Heal(transform, transform, 10);
-            }
         }
 
         #region Stats methods - Init, Getter, IsNullCheck
@@ -72,9 +47,11 @@ namespace Khynan_Coding
                     navMeshAgent.speed = GetStatByType(StatType.MovementSpeed).CurrentValue;
                 }
 
-                if (DoesThisStatTypeExists(StatType.Health))
+                if (DoesThisStatTypeExists(StatType.GatherSpeed))
                 {
-                    CalculateHealthPercentage(GetStatByType(StatType.Health).CurrentValue, GetStatByType(StatType.Health).MaxValue);
+                    Animator animator = GetComponent<CharacterController>().Animator;
+                    AnimatorHelper.SetAnimatorFloatParameter(
+                        animator, "CharacterGatherSpeed", 1 + GetStatByType(StatType.GatherSpeed).CurrentValue / 2f);
                 }
             }
         }
@@ -117,61 +94,6 @@ namespace Khynan_Coding
 
             Debug.LogError("The stat type (" + statType + ") does not exists.");
             return false;
-        }
-        #endregion
-
-        #region Life Stat | Damage - Heal
-        public virtual void TakeDamage(Transform target, Transform attacker, float damage)
-        {
-            GetStatByType(StatType.Health).CurrentValue -= damage;
-            OnDamageTaken?.Invoke(
-                GetStatByType(StatType.Health).CurrentValue, 
-                GetStatByType(StatType.Health).MaxValue);
-
-            CalculateHealthPercentage(GetStatByType(StatType.Health).CurrentValue, GetStatByType(StatType.Health).MaxValue);
-
-            AttackerData = attacker;
-
-            if (GetStatByType(StatType.Health).CurrentValue <= 0) { OnDeath(); }
-
-            Debug.Log("Combat Info : " + target.name + " took " + damage + " damage by " + attacker.name + " !");
-        }
-
-        public virtual void Heal(Transform target, Transform ally, float healAmount)
-        {
-            GetStatByType(StatType.Health).CurrentValue += healAmount;
-
-            OnDamageTaken?.Invoke(
-                GetStatByType(StatType.Health).CurrentValue,
-                GetStatByType(StatType.Health).MaxValue);
-
-            CalculateHealthPercentage(GetStatByType(StatType.Health).CurrentValue, GetStatByType(StatType.Health).MaxValue);
-
-            Debug.Log("Combat Info : " + target.name + " has been healed by " + healAmount + " life points, by " + ally.name + " !");
-        }
-
-        protected virtual void CalculateHealthPercentage(float current, float max)
-        {
-            HealthPercentage = current / max * 100f;
-        }
-        #endregion
-
-        #region Death methods
-        protected virtual bool IsCloseToDie()
-        {
-            if (GetStatByType(StatType.Health).CurrentValue <= GetStatByType(StatType.Health).MaxValue * (GetStatByType(StatType.Health).CriticalThresholdValue / 100))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        protected virtual void OnDeath()
-        {
-            //Call all the elements that happens on death
-
-            OnDeathHappened?.Invoke(AttackerData);
         }
         #endregion
 

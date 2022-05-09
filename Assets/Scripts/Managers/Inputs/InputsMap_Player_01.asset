@@ -33,15 +33,3 @@ MonoBehaviour:
     keyCode: 113
   - m_Name: MoveRight
     keyCode: 100
-  - m_Name: InventorySlot_1
-    keyCode: 49
-  - m_Name: InventorySlot_2
-    keyCode: 50
-  - m_Name: InventorySlot_3
-    keyCode: 51
-  - m_Name: InventorySlot_4
-    keyCode: 52
-  - m_Name: InventorySlot_5
-    keyCode: 53
-  - m_Name: InventorySlot_6
-    keyCode: 54

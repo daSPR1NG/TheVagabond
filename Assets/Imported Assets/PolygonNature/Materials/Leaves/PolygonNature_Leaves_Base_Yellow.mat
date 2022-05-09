@@ -171,7 +171,7 @@ Material:
     - _edgeFoamColor: {r: 0.7454045, g: 0.7454045, b: 0.7454045, a: 1}
     - _shallowColor: {r: 0.07421358, g: 0.1529262, b: 0.1470273, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &8890005276093244836
+--- !u!114 &1267776661891313740
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

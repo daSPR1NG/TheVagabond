@@ -7,49 +7,21 @@ namespace Khynan_Coding
 {
     public class UIGearSlot : UIButton
     {
-        [Header("GEAR SLOT SETTINGS")]
-        [SerializeField] private Gear gearInSlot;
+        [Header("DEPENDENCIES")]
         [SerializeField] private Image gearInSlotIconImage;
-        [SerializeField] private TMP_Text inputText;
-        private KeyCode _SlotKeycode;
-        private UIInventorySlots _UIInventorySlots;
 
         #region Public References
-        public Gear GearInSlot { get => gearInSlot; set => gearInSlot = value; }
-        public bool IsSlotEmpty => !gearInSlot;
+        [field: SerializeField] public Gear GearInSlot { get; set; }
+        public bool IsSlotEmpty => !GearInSlot;
         #endregion
-
-        public void SetupGearSlotOnCreation(UIInventorySlots uiInventorySlots, string keyCodeString, KeyCode keyCode)
-        {
-            //Set keybind text
-            SetParentSlotScriptReference(uiInventorySlots);
-            SetGearSlotInput(keyCodeString);
-            _SlotKeycode = keyCode;
-        }
-
-        public void SetParentSlotScriptReference(UIInventorySlots uiInventorySlots)
-        {
-            _UIInventorySlots = uiInventorySlots;
-        }
-
-        public void SetGearSlotInput(string keyCodeString)
-        {
-            if (!inputText)
-            {
-                Debug.LogError("Input text is missing.");
-                return;
-            }
-
-            inputText.SetText(keyCodeString);
-        }
 
         public void SetGearInSlot(Gear gear)
         {
-            gearInSlot = gear;
-            SetGearInSlotImageIcon(gear);
+            GearInSlot = gear;
+            SetIcon(gear);
         }
 
-        private void SetGearInSlotImageIcon(Gear gear)
+        private void SetIcon(Gear gear)
         {
             gearInSlotIconImage.color = Color.white;
             gearInSlotIconImage.sprite = gear.GearSpriteIcon;
@@ -58,23 +30,19 @@ namespace Khynan_Coding
         #region Pointer events - Enter / Exit / Click
         public override void OnPointerEnter(PointerEventData eventData)
         {
+            //Show tooltip
             base.OnPointerEnter(eventData);
         }
 
         public override void OnPointerExit(PointerEventData eventData)
         {
+            //Hide tooltip
             base.OnPointerExit(eventData);
         }
 
         public override void OnPointerClick(PointerEventData eventData)
         {
-            if (!GearInSlot || IsSelected) { return; }
-
-            _UIInventorySlots.DeselectEachGearSlots();
-            _UIInventorySlots.CharacterInventory.EquipAGear(gearInSlot);
-
-            base.OnPointerClick(eventData);
-            //Envoyé l'info au combatsystem > currentEquippedGear set
+            //Show tooltip faster
         }
         #endregion
     }

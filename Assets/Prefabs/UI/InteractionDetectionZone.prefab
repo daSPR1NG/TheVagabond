@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5721306822524616014}
   - component: {fileID: 5721306822524616009}
   - component: {fileID: 5721306822524616008}
-  - component: {fileID: 5721306822524616015}
   - component: {fileID: 5721306822524616010}
   - component: {fileID: 5721306822524616011}
   m_Layer: 6
@@ -86,23 +85,6 @@ MonoBehaviour:
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 1
---- !u!114 &5721306822524616015
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5721306822524616013}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!114 &5721306822524616010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115,7 +97,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 812f1de110b9f9e43a5adb0ed3d10819, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactionType: 1
   keyText: {fileID: 5721306824041212934}
   interactionActionImage: {fileID: 5721306822634293772}
   interactionActionSprites:
@@ -450,7 +431,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDebuggingAPosition: 0
-  debugRadiusValue: 1
+  positionDebugRadiusValue: 1
   debugDrawColor: {r: 1, g: 0.52006483, b: 0, a: 1}
   positionOffset: {x: 0, y: 2, z: 0}
   colliderToDebug: {fileID: 5721306822722144152}

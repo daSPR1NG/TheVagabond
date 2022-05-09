@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -16,12 +17,13 @@ namespace Khynan_Coding
 
         [Header("DETECTION PARAMETERS")]
         public LayerMask InteractingLayer;
-        float agentStoppingDistanceAtStart;
+        float _agentStoppingDistanceAtStart;
 
         private Transform targetHit = null;
         private Transform currentTarget = null;
         private Transform closestTarget = null;
         public bool IsInteracting = false; // Debug
+        [SerializeField] private List<InteractionData> interactionDatas = new();
 
         public bool HasATarget => CurrentTarget != null;
         public bool isWithinReachOfInteraction = false;
@@ -38,7 +40,22 @@ namespace Khynan_Coding
         public Transform ClosestTarget { get => closestTarget; private set => closestTarget = value; }
         #endregion
 
-        private void Start() => agentStoppingDistanceAtStart = NavMeshAgent.stoppingDistance;
+        [System.Serializable]
+        private class InteractionData
+        {
+            [field: SerializeField] public Transform IETransform { get; set; }
+            [field: SerializeField] public InteractionType InteractiveType { get; set; }
+            [field: SerializeField] public InteractiveElement InteractiveElement { get; set; }
+
+            public InteractionData(Transform t, InteractiveElement interactiveElement, InteractionType type)
+            {
+                this.IETransform = t;
+                InteractiveElement = interactiveElement;
+                this.InteractiveType = type;
+            }
+        }
+
+        private void Start() => _agentStoppingDistanceAtStart = NavMeshAgent.stoppingDistance;
 
         void Update()
         {
@@ -49,7 +66,12 @@ namespace Khynan_Coding
 
             if (Helper.IsKeyPressed(InputsManager.Instance.GetInputByName("InteractionMB"))) 
             { 
-                ShootRaycastEntityDetection(); 
+                ShootRaycastToDetectEntity(); 
+            }
+
+            if (Helper.IsKeyPressed(KeyCode.Mouse1) && Helper.IsKeyMaintained(KeyCode.LeftShift))
+            {
+                ShootRaycastAndTryToAddToQueue();
             }
 
             TryToInteractWithTheClosestTarget();
@@ -57,21 +79,51 @@ namespace Khynan_Coding
             MoveToTarget(CurrentTarget);
         }
 
-        void ShootRaycastEntityDetection()
+        void ShootRaycastToDetectEntity()
         {
             if (!Physics.Raycast(
                 Helper.GetMainCamera().ScreenPointToRay(Input.mousePosition), out RaycastHit hit, Mathf.Infinity, InteractingLayer))
             {
-                //If the player hit the ground - for the moment it reset the interaction
-                ResetInteraction();
+                //If the player hit the ground - for the moment it resets the interaction
+                ResetInteraction(true);
                 Controller.SwitchState(Controller.IdleState);
                 Debug.Log("Hit terrain with cursor");
                 return;
             }
 
             AssignTarget(hit.transform);
+
+            InteractiveElement interactiveElement = hit.transform.GetComponent<InteractiveElement>();
+
+            AddInteractionToQueue(new InteractionData(
+                    hit.transform, interactiveElement, interactiveElement.InteractionType));
         }
 
+        private void AssignTarget(Transform hitTransform)
+        {
+            InteractiveElement interactiveElement = hitTransform.GetComponent<InteractiveElement>();
+            bool isInteractiveElementOfTheCorrectType =
+                interactiveElement.IEType == IEType.Progressive || interactiveElement.IEType == IEType.Direct;
+
+            if (!interactiveElement || !interactiveElement.IsInteractive || !isInteractiveElementOfTheCorrectType) { return; }
+
+            //If last target wasn't known last = current or LastTarget was known but it is not the same as the target hit
+            if (!CurrentTarget || CurrentTarget != TargetHit)
+            {
+                TargetHit = hitTransform;
+                ResetInteraction(true);
+
+                Controller.SwitchState(Controller.IdleState);
+
+                CurrentTarget = TargetHit;
+                TargetHit = null;
+
+                Helper.SetAgentStoppingDistance(NavMeshAgent, CurrentTarget.GetComponent<InteractiveElement>().MinimumDistanceToInteract);
+                interactiveElement.IsItTargetedByPlayer = true;
+            }
+        }
+
+        #region Closest Target - Set / Try to interact
         public void SetClosestTarget(Transform other)
         {
             ClosestTarget = other;
@@ -87,37 +139,97 @@ namespace Khynan_Coding
 
             if (!interactiveElement.IsInteractive) { return; }
 
-            CurrentTarget = ClosestTarget;
+            ClearInteractionDatas();
+            AssignTarget(ClosestTarget);
 
             Helper.SetAgentStoppingDistance(NavMeshAgent, interactiveElement.MinimumDistanceToInteract);
             interactiveElement.IsItTargetedByPlayer = true;
 
             Debug.Log("Try to interact by pressing input");
         }
+        #endregion
 
-        private void AssignTarget(Transform hitTransform)
+        #region Interaction Datas - Add / Remove / Get / Bool check
+        private void ShootRaycastAndTryToAddToQueue()
         {
-            InteractiveElement interactiveElement = hitTransform.GetComponent<InteractiveElement>();
-            bool isInteractiveElementOfTheCorrectType = 
-                interactiveElement.IEType == IEType.Progressive || interactiveElement.IEType == IEType.Direct;
-
-            if (!interactiveElement || !interactiveElement.IsInteractive || !isInteractiveElementOfTheCorrectType) { return; }
-
-            //If last target wasn't known last = current or LastTarget was known but it is not the same as the target hit
-            if (!CurrentTarget || CurrentTarget != TargetHit)
+            if (!Physics.Raycast(Helper.GetMainCamera().ScreenPointToRay(Input.mousePosition), out RaycastHit hit, Mathf.Infinity, InteractingLayer))
             {
-                TargetHit = hitTransform;
-                ResetInteraction();
-
-                Controller.SwitchState(Controller.IdleState);
-
-                CurrentTarget = TargetHit;
-                TargetHit = null;
-                
-                Helper.SetAgentStoppingDistance(NavMeshAgent, CurrentTarget.GetComponent<InteractiveElement>().MinimumDistanceToInteract);
-                interactiveElement.IsItTargetedByPlayer = true;
+                return;
             }
+
+            InteractiveElement interactiveElement = hit.transform.GetComponent<InteractiveElement>();
+
+            AddInteractionToQueue(new InteractionData(
+                   hit.transform, interactiveElement, interactiveElement.InteractionType));
         }
+
+        private void AddInteractionToQueue(InteractionData interactionData)
+        {
+            if (IsThisInteractionAlreadyQueued(interactionData.IETransform)) { return; }
+
+            interactionDatas.Add(interactionData);
+            interactionData.InteractiveElement.SelectInteractiveElement();
+
+            if (!CurrentTarget) { AssignTarget(interactionData.IETransform); }
+        }
+
+        private void RemoveInteractionFromQueue(InteractionData interactionData)
+        {
+            if (interactionDatas.Count == 0 || !IsThisInteractionAlreadyQueued(interactionData.IETransform)) { return; }
+
+            interactionData.InteractiveElement.DeselectInteractiveElement();
+            interactionDatas.Remove(interactionData);
+        }
+
+        private void ClearInteractionDatas()
+        {
+            if (interactionDatas.Count == 0) { return; }
+
+            for (int i = interactionDatas.Count - 1; i >= 0; i--)
+            {
+                interactionDatas[i].InteractiveElement.DeselectInteractiveElement();
+            }
+
+            interactionDatas.Clear();
+        }
+
+        private void TryToPoolNewInteraction()
+        {
+            if (interactionDatas.Count == 0) { return; }
+
+            AssignTarget(interactionDatas[0].IETransform);
+        }
+
+        private InteractionData GetExistingIEData(Transform t)
+        {
+            if (interactionDatas.Count == 0) { return null; }
+
+            for (int i = interactionDatas.Count - 1; i >= 0; i--)
+            {
+                if (interactionDatas[i].IETransform == t)
+                {
+                    return interactionDatas[i];
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsThisInteractionAlreadyQueued(Transform t)
+        {
+            if (interactionDatas.Count == 0) { return false; }
+
+            for (int i = interactionDatas.Count - 1; i >= 0; i--)
+            {
+                if (interactionDatas[i].IETransform == t)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        #endregion
 
         #region Distance with target - Move, target reached check, distance calculation
         private void MoveToTarget(Transform target)
@@ -126,21 +238,24 @@ namespace Khynan_Coding
 
             Controller.MatchCurrentMSToThisValue(Controller.MaxMovementSpeed, Time.deltaTime);
 
+            InteractiveElement interactiveElement = target.GetComponent<InteractiveElement>();
+            SetCorrectInteractionAnimation(interactiveElement.InteractionType);
+
             if (HasTargetBeenReached(target))
             {
-                //Reset Controller properties
+                //Reset Controller movement properties
                 Controller.SetCurrentMSValue(Controller.MaxMovementSpeedDividedByX);
-                Helper.SetAgentStoppingDistance(NavMeshAgent, agentStoppingDistanceAtStart);
+                Helper.SetAgentStoppingDistance(NavMeshAgent, _agentStoppingDistanceAtStart);
+                Controller.LookAtSomething(target);
 
                 //Start interaction
-                InteractiveElement interactiveElement = target.GetComponent<InteractiveElement>();
                 interactiveElement.StartInteraction(transform);
-
+                RemoveInteractionFromQueue(GetExistingIEData(interactiveElement.transform));
                 Controller.SwitchState(Controller.InteractionState);
 
                 OnInteraction?.Invoke(
                     interactiveElement.InteractionType,
-                    0, 
+                    interactiveElement.CurrentCollectionDuration, 
                     interactiveElement.CollectionDuration, 
                     interactiveElement.InteractionName,
                     interactiveElement.IEType);
@@ -151,6 +266,7 @@ namespace Khynan_Coding
             }
 
             Helper.SetAgentDestination(NavMeshAgent, target.position);
+            Controller.SwitchState(Controller.MovingState);
         }
 
         private bool HasTargetBeenReached(Transform target)
@@ -167,7 +283,7 @@ namespace Khynan_Coding
         }
         #endregion
 
-        public void ResetInteraction(bool interactionIsComplete = false)
+        public void ResetInteraction(bool clearInteractionDatas)
         {
             Debug.Log("Reset interaction.");
 
@@ -181,14 +297,19 @@ namespace Khynan_Coding
             CurrentTarget = null;
             OnInteractionEnd?.Invoke();
 
-            //A garder idk
-            //if (!interactionIsComplete) { return; }
-
             Controller.SwitchState(Controller.IdleState);
+
+            if (clearInteractionDatas) 
+            {
+                ClearInteractionDatas();
+                return;
+            }
+
+            TryToPoolNewInteraction();
         }
 
-        #region Interaction Animation - Set / Reset
-        public void SetCorrectInteractionAnimation(InteractionType interactionType)
+        #region Interaction Animation - Set
+        private void SetCorrectInteractionAnimation(InteractionType interactionType)
         {
             AnimatorAssistant animatorAssistant = Controller.Animator.GetComponent<AnimatorAssistant>();
 
@@ -208,12 +329,6 @@ namespace Khynan_Coding
                     animatorAssistant.SetAnimatorRunTimeController(4);
                     break;
             }
-        }
-
-        public void ResetCorrectInteractionAnimation()
-        {
-            AnimatorAssistant animatorAssistant = Controller.Animator.GetComponent<AnimatorAssistant>();
-            animatorAssistant.SetAnimatorRunTimeController(0);
         }
         #endregion
     }

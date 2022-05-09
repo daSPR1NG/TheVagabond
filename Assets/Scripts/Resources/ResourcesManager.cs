@@ -6,7 +6,7 @@ namespace Khynan_Coding
     [DisallowMultipleComponent]
     public class ResourcesManager : MonoBehaviour
     {
-        public delegate void ResourceEarnsHandler(Resource resource);
+        public delegate void ResourceEarnsHandler(EarnData earnData);
         public event ResourceEarnsHandler OnEarningResources;
         
         public delegate void ResourceLossHandler(float valueEarned);
@@ -58,7 +58,7 @@ namespace Khynan_Coding
         {
             GetThisRessource(resource.ResourceType).AddToCurrentValue(resource.CurrentValue);
 
-            OnEarningResources?.Invoke(resource);
+            OnEarningResources?.Invoke(new EarnData(resource.ResourceName, resource.CurrentValue, resource));
         } 
         
         public void TakeResourcesFromPlayer(ResourceType wantedRessourceType, float value)

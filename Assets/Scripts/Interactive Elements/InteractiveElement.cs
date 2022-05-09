@@ -9,7 +9,7 @@ namespace Khynan_Coding
 
     public enum IEType
     {
-        Unassigned, Direct, Progressive, WithStats,
+        Unassigned, Direct, Progressive
     }
 
     [DisallowMultipleComponent]
@@ -21,6 +21,7 @@ namespace Khynan_Coding
         [SerializeField] private IEType interactiveElementType = IEType.Unassigned;
         private Transform _interactionActor;
         private bool _isInteractive = true;
+        private bool _isSelected;
 
         [Space][Header("VALUE SETTINGS")]
         [Tooltip("This value defines the number of time the interaction would be executed. " +
@@ -31,8 +32,9 @@ namespace Khynan_Coding
         private float _currentCollectionDuration = 0;
 
         [Space][Header("EFFECT SETTINGS")]
-        [SerializeField] private GameObject interactionCompleteVFX;
         [SerializeField] private AudioClip interactionCompleteSFX;
+
+        private DetectionZone _detectionZone;
 
         private bool _anInteractionIsProcessing = false;
         private bool _isItTargetedByPlayer = false;
@@ -45,10 +47,12 @@ namespace Khynan_Coding
         public float CollectionDuration { get => _collectionDuration; private set => _collectionDuration = value; }
         public bool AnInteractionIsProcessing { get => _anInteractionIsProcessing; private set => _anInteractionIsProcessing = value; }
         public OutlineModule OutlineComponent => transform.GetChild(0).GetComponent<OutlineModule>();
+        protected Animator Animator => transform.GetChild(0).GetComponent<Animator>();
         protected Transform InteractionActor { get => _interactionActor; private set => _interactionActor = value; }
         protected int InteractionRepeatTime { get => interactionRepeatTime; }
         public bool IsItTargetedByPlayer { get => _isItTargetedByPlayer; set => _isItTargetedByPlayer = value; }
         public bool IsInteractive { get => _isInteractive; private set => _isInteractive = value; }
+        public float CurrentCollectionDuration { get => _currentCollectionDuration; protected set => _currentCollectionDuration = value; }
         #endregion
 
         protected virtual void Start() => Init();
@@ -58,7 +62,8 @@ namespace Khynan_Coding
         #region Init
         protected virtual void Init()
         {
-            //Empty for the moment
+            OutlineComponent.enabled = false;
+            _detectionZone = Helper.GetComponentInChildren<DetectionZone>(transform);
         }
         #endregion
 
@@ -67,23 +72,15 @@ namespace Khynan_Coding
         {
             InteractionActor = interactionActor;
 
-            InteractionHandler interactionActorInteractionHandler = InteractionActor.GetComponent<InteractionHandler>();
-            interactionActorInteractionHandler.SetCorrectInteractionAnimation(InteractionType);
-
             if (IEType == IEType.Progressive)
             {
-                ResetCollectionDuration();
+                CollectionDuration = GetCollectionDuration();
             }
 
             if (AnInteractionIsProcessing) { return; }
 
             AnInteractionIsProcessing = true;
-        }
-
-        private void ResetCollectionDuration()
-        {
-            CollectionDuration = GetCollectionDuration();
-            _currentCollectionDuration = 0;
+            _detectionZone.RemoveATransformFromTheList(InteractionActor);
         }
 
         protected float GetInteractionAnimationLength()
@@ -112,9 +109,6 @@ namespace Khynan_Coding
 
             if (!InteractionActor) { return; }
 
-            InteractionHandler interactionActorInteractionHandler = InteractionActor.GetComponent<InteractionHandler>();
-            interactionActorInteractionHandler.ResetCorrectInteractionAnimation();
-
             InteractionActor = null;
             AnInteractionIsProcessing = false;
         }
@@ -132,13 +126,13 @@ namespace Khynan_Coding
         {
             if (!AnInteractionIsProcessing) { return; }
 
-            _currentCollectionDuration += Time.deltaTime;
+            CurrentCollectionDuration += Time.deltaTime;
 
             Debug.Log("Interaction Progression.");
 
-            if (_currentCollectionDuration >= CollectionDuration)
+            if (CurrentCollectionDuration >= CollectionDuration)
             {
-                _currentCollectionDuration = CollectionDuration;
+                CurrentCollectionDuration = CollectionDuration;
                 OnInteractionCompleted(InteractionActor);
 
                 Debug.Log("Interaction Completed.");
@@ -154,22 +148,34 @@ namespace Khynan_Coding
             InteractionCompletedFeedback();
 
             InteractionHandler interactionHandler = interactionActor.GetComponent<InteractionHandler>();
-            interactionHandler.ResetInteraction(true);
+            interactionHandler.ResetInteraction(false);
         }
 
         private void InteractionCompletedFeedback()
         {
             Debug.Log("interaction has been completed.");
 
-            //if (interactionCompleteVFX)
-            //{
-            //    GameObject go = Instantiate(interactionCompleteVFX, transform.position, interactionCompleteVFX.transform.rotation);
-            //}
+            AnimatorHelper.SetAnimatorTriggerParameter(Animator, "OnDeath");
 
-            //if (interactionCompleteSFX)
-            //{
-            //    //AudioHelper.AudioSourcePlay(audioSource, interactionCompleteSFX);
-            //}
+            if (interactionCompleteSFX)
+            {
+                //AudioHelper.AudioSourcePlay(audioSource, interactionCompleteSFX);
+            }
+        }
+        #endregion
+
+        #region IE - Selection / Deselection
+        public void SelectInteractiveElement()
+        {
+            _isSelected = true;
+            OutlineComponent.enabled = true;
+        }
+
+        public void DeselectInteractiveElement()
+        {
+            _isSelected = false;
+
+            OutlineComponent.enabled = false;
         }
         #endregion
 
@@ -192,7 +198,7 @@ namespace Khynan_Coding
             if (!IsInteractive) { return; }
 
             IDetectable.IDetectableExtension.SetCursorAppearanceOnDetection(
-                CursorType.Default, OutlineComponent, false, transform.name + " is no longer detected.");
+                CursorType.Default, OutlineComponent, _isSelected, transform.name + " is no longer detected.");
         }
 
         private void OnMouseOver()

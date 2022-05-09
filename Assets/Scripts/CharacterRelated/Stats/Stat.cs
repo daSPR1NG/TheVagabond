@@ -5,7 +5,7 @@ namespace Khynan_Coding
 {
     public enum StatType
     {
-        Unassigned, Health, MovementSpeed, GatherSpeed, AttackSpeed, AttackRange, AttackDamage
+        Unassigned, Hunger, Disease, Tiredness, MovementSpeed, GatherSpeed
     }
 
     [System.Serializable]
@@ -19,6 +19,7 @@ namespace Khynan_Coding
         [SerializeField] private bool needsToMatchBaseValueAtStart = true;
         [SerializeField] private float baseValue = 0;
         [SerializeField] private float maxValue = 0;
+        [SerializeField] private float minMaxValue = 0;
         [SerializeField] private List<StatModifier> statModifiers = new();
         public float currentValue = 0;
 
@@ -30,8 +31,8 @@ namespace Khynan_Coding
 
         #region Public references
         public float BaseValue { get => baseValue; }
-        public float CurrentValue { get => currentValue; set => currentValue = Mathf.Clamp(value, 0, maxValue); }
-        public float MaxValue { get => maxValue; set => maxValue = value; }
+        public float CurrentValue { get => currentValue; set => currentValue = Mathf.Clamp(value, 0, MaxValue); }
+        public float MaxValue { get => maxValue; set => maxValue = Mathf.Clamp(value, minMaxValue, value); }
         public float CriticalThresholdValue { get => criticalThresholdValue; }
         #endregion
 
@@ -74,6 +75,11 @@ namespace Khynan_Coding
                         value += 1 * (modifier.ModifierValue / 100);
                         break;
                 }
+            }
+
+            if (value <= minMaxValue)
+            {
+                return minMaxValue;
             }
 
             //Set the max value corresponding to : Base value (+ modifiers)(if present)

@@ -18,7 +18,6 @@ namespace Khynan_Coding
         public Character_IdleState IdleState = new();
         public Character_MovingState MovingState = new();
         public Character_InteractionState InteractionState = new();
-        public Character_AttackState AttackState = new();
         #endregion
 
         #region Public references
@@ -44,7 +43,7 @@ namespace Khynan_Coding
         protected void UpdateRigidbodyPosition(Rigidbody rb, float speed, Vector3 directionToMoveTowards)
         {
             //Algo = Current position += direction to move towards * a speed *time.fixed/delta.Time
-            rb.position += speed * Time.fixedDeltaTime * directionToMoveTowards;
+            rb.position += speed * Time.fixedDeltaTime * directionToMoveTowards.normalized;
         }
 
         public void UpdateCharacterNavMeshAgentRotation(UnityEngine.AI.NavMeshAgent navMeshAgent, Transform transform, float rotationSpeed)
@@ -100,7 +99,7 @@ namespace Khynan_Coding
             AnimatorHelper.SetAnimatorFloatParameter(
                 Animator, "CharacterSpeed", CharacterStats.GetStatByType(StatType.MovementSpeed).CurrentValue);
             AnimatorHelper.SetAnimatorFloatParameter(
-                Animator, "CharacterSpeedMultiplier", CharacterStats.GetStatByType(StatType.MovementSpeed).CurrentValue / 2.5f);
+                Animator, "CharacterSpeedMultiplier", CharacterStats.GetStatByType(StatType.MovementSpeed).CurrentValue / 5f);
         }
 
         public void MatchCurrentMSToThisValue(float valueToMatch, float updateSpeed)
@@ -110,6 +109,11 @@ namespace Khynan_Coding
             currentMovementSpeed = Mathf.Lerp(currentMovementSpeed, valueToMatch, updateSpeed);
 
             SetCurrentMSValue(currentMovementSpeed);
+        }
+
+        public void LookAtSomething(Transform t)
+        {
+            transform.LookAt(t, Vector3.up);
         }
     }
 }

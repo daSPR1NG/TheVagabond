@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Khynan_Coding
 {
-    [RequireComponent(typeof(ResourceStats))]
     public class CollectableResource : InteractiveElement, IRespawnable
     {
         [Header("RESOURCE SETTINGS")]
@@ -12,13 +11,13 @@ namespace Khynan_Coding
         private float _currentRespawnCooldown;
 
         [Space][Header("APPEARANCE SETTINGS")]
+        [SerializeField] private bool UpdatesAspect = true;
         public List<ResourceAspect> ResourceAspects;
         private int _aspectIndex = 0;
         private float _currentCollectionCycleDuration = 0;
 
         #region References
         private MeshCollider MeshCollider => GetComponent<MeshCollider>();
-        private ResourceStats ResourceStats => GetComponent<ResourceStats>();
         #endregion
 
         [System.Serializable]
@@ -49,21 +48,6 @@ namespace Khynan_Coding
             }
         }
 
-        private void Awake()
-        {
-            EnableStats();
-        }
-
-        private void OnEnable()
-        {
-            ResourceStats.OnDeathHappened += OnResourceDeath;
-        }
-
-        private void OnDisable()
-        {
-            ResourceStats.OnDeathHappened -= OnResourceDeath;
-        }
-
         protected override void Start() => base.Start();
 
         protected override void Update()
@@ -80,26 +64,14 @@ namespace Khynan_Coding
 
             if (ResourceAspects.Count == 0) { return; }
 
-            SetDefaultAspect();
-        }
-
-        private void EnableStats()
-        {
-            ResourceStats resourceStats = GetComponent<ResourceStats>();
-
-            if (IEType != IEType.WithStats)
-            {
-                resourceStats.enabled = false;
-                return;
-            }
-            
-            resourceStats.enabled = true;
+            SetDefaultAspect(false);
         }
 
         #region Interaction - Start / Exit
         public override void StartInteraction(Transform interactionActor)
         {
             base.StartInteraction(interactionActor);
+
             _currentCollectionCycleDuration = 0;
 
             if (resource.ResourceType == ResourceType.Unassigned || resource.CurrentValue == 0)
@@ -132,6 +104,8 @@ namespace Khynan_Coding
             _currentCollectionCycleDuration = 0;
             _aspectIndex++;
 
+            if (!UpdatesAspect) { return; }
+
             UpdateAspect(_aspectIndex);
         }
         #endregion
@@ -153,16 +127,10 @@ namespace Khynan_Coding
 
             _currentRespawnCooldown = respawnCooldown;
         }
-
-        private void OnResourceDeath(Transform killer)
-        {
-            OnInteractionCompleted(ResourceStats.AttackerData);
-            Debug.Log("On resource death !");
-        }
         #endregion
 
         #region Update Aspect - Visual / Collider
-        private void SetDefaultAspect()
+        private void SetDefaultAspect(bool hasRespawned)
         {
             for (int i = 0; i < ResourceAspects.Count; i++)
             {
@@ -175,6 +143,12 @@ namespace Khynan_Coding
 
                 ResourceAspects[i].AspectGO.SetActive(false);
             }
+
+            _aspectIndex = 0;
+
+            if (hasRespawned) { return; }
+
+            //Play respawn animation !
         }
 
         private void UpdateAspect(int index)
@@ -198,11 +172,19 @@ namespace Khynan_Coding
         #endregion
 
         #region Respawn - Respawn behaviour + Cooldown process
+        private bool _hasRespawnAnimationBeenPlayed = false;
+
         private void ProcessRespawnCooldownDuration()
         {
             if (IsInteractive) { return; }
 
             _currentRespawnCooldown -= Time.deltaTime;
+
+            if (!_hasRespawnAnimationBeenPlayed && _currentRespawnCooldown <= AnimatorHelper.GetAnimationLength(Animator, 2))
+            {
+                AnimatorHelper.SetAnimatorTriggerParameter(Animator, "OnRespawn");
+                _hasRespawnAnimationBeenPlayed = true;
+            }
 
             if (_currentRespawnCooldown <= 0)
             {
@@ -213,19 +195,19 @@ namespace Khynan_Coding
 
         public void OnRespawn()
         {
-            //This below may be called directly in an animation instead of being called here
+            ResetCollectionDuration();
+
             SetInteractiveValue(true);
             resource.AddToCurrentValue(resource.StartingValue);
 
-            SetDefaultAspect();
+            SetDefaultAspect(true);
 
-            if(IEType == IEType.WithStats)
-            {
-                ResourceStats.GetStatByType(StatType.Health).CurrentValue = ResourceStats.GetStatByType(StatType.Health).MaxValue;
-            }
+            _hasRespawnAnimationBeenPlayed = false;
+        }
 
-            //Add respawn animation
-            //+ maybe VFX
+        private void ResetCollectionDuration()
+        {
+            CurrentCollectionDuration = 0;
         }
         #endregion
 

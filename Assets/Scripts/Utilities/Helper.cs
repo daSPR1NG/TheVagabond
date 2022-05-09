@@ -1,3 +1,4 @@
+using Cinemachine;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
@@ -23,6 +24,16 @@ namespace Khynan_Coding
         public static Camera GetMainCamera()
         {
             return Camera.main;
+        }
+
+        public static CinemachineBrain GetCinemachineBrain()
+        {
+            return GetMainCamera().GetComponent<CinemachineBrain>();
+        }
+
+        public static ICinemachineCamera GetActiveVirtualCamera()
+        {
+            return GetCinemachineBrain().ActiveVirtualCamera;
         }
 
         public static Vector3 GetMainCameraForwardDirection(float yValue)
@@ -164,14 +175,6 @@ namespace Khynan_Coding
         public static void SetAgentDestination(NavMeshAgent navMeshAgent, Vector3 target)
         {
             navMeshAgent.SetDestination(target);
-
-            PlayerController playerController = navMeshAgent.GetComponent<PlayerController>();
-
-            if (playerController)
-            {
-                playerController.SwitchState(playerController.MovingState);
-            }
-            else ThrowErrorMessage("State Manager not found !", navMeshAgent.transform);
         }
 
         public static void SetAgentStoppingDistance(NavMeshAgent navMeshAgent, float newStoppingDistanceValue)
@@ -239,5 +242,17 @@ namespace Khynan_Coding
             window.SetActive(false);
         }
         #endregion
+
+        public static T GetComponentInChildren<T>(Transform parent) where T : Component
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                if (parent.GetChild(i).GetComponent<T>() == null) { continue; }
+
+                return parent.GetChild(i).GetComponent<T>();
+            }
+
+            return default;
+        }
     }
 }

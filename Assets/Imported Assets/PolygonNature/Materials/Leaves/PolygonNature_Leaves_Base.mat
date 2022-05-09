@@ -119,14 +119,14 @@ Material:
     m_Floats:
     - Vector1_19441F9: 0.4
     - Vector1_658019CB: 0.1
-    - Vector1_7722A149: 0.1
+    - Vector1_7722A149: 0
     - Vector1_8EA465BE: 1
-    - Vector1_AADD838F: 10
-    - Vector1_C1D16DBE: 2
+    - Vector1_AADD838F: 0
+    - Vector1_C1D16DBE: 0
     - Vector1_C26BF9CF: 0
-    - Vector1_C39D93FF: 0.2
-    - Vector1_CE098D07: 0.01
-    - Vector1_EBB5CF27: 6
+    - Vector1_C39D93FF: 0
+    - Vector1_CE098D07: 0
+    - Vector1_EBB5CF27: 0
     - Vector1_F90C51C7: 3
     - Vector1_FA7B4DA3: 0
     - _Big_Wave: 7.7
@@ -166,7 +166,7 @@ Material:
     - _ZWrite: 1
     - __dirty: 1
     m_Colors:
-    - Color_369F793F: {r: 0.7358491, g: 0.8301887, b: 0.6148096, a: 0}
+    - Color_369F793F: {r: 0.735849, g: 0.8301887, b: 0.6148095, a: 0}
     - Color_FA85148A: {r: 0, g: 0, b: 0, a: 0.22745098}
     - Vector2_3D1D1E3D: {r: 1, g: 0, b: 0, a: 0}
     - Vector2_B578DC94: {r: 0.5, g: 0.5, b: 0.5, a: 0}
@@ -174,7 +174,7 @@ Material:
     - _ColorTint: {r: 0.8308824, g: 0.791782, b: 0.4765355, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &5289464599501817333
+--- !u!114 &9143966573630550887
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

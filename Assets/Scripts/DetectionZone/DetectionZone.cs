@@ -45,7 +45,7 @@ namespace Khynan_Coding
         #endregion
 
         #region Remove methods - OnTriggerExit & Dead Flag
-        protected virtual void RemoveATransformFromTheList(Transform other)
+        public virtual void RemoveATransformFromTheList(Transform other)
         {
             if (!transformFound.Contains(other.transform)) { return; }
 

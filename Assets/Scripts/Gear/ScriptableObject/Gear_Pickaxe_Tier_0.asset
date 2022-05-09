@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9733588f558de3446804c4e556a4cf32, type: 3}
+  m_Name: Gear_Pickaxe_Tier_0
+  m_EditorClassIdentifier: 
+  gearName: Gear_Pickaxe_Tier_0
+  gearType: 1
+  gearSubType: 0
+  gearTier: 1
+  gearAOC: {fileID: 0}
+  gearSpriteIcon: {fileID: 0}
+  gearRecipe: {fileID: 11400000, guid: 4942d7e8284043342931bc05b1bfb352, type: 2}
+  gearStatModifiers:
+  - modifierValue: 25
+    modifiedStatType: 1
+    modifierType: 2

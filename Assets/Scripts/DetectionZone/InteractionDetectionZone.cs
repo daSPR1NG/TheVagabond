@@ -9,28 +9,23 @@ namespace Khynan_Coding
         public event TriggerEventHandler OnTriggerExit;
 
         #region Public references
-        private InteractiveElement InteractiveElement => transform.parent.GetComponent<InteractiveElement>();
+        private InteractiveElement ParentAttachedIE => transform.parent.GetComponent<InteractiveElement>();
         #endregion
 
         protected override void Start() => base.Start();
 
         private void OnTriggerStay(Collider other)
         {
-            if (!InteractiveElement.IsInteractive || InteractiveElement.IEType == IEType.WithStats) { return; }
+            if (!ParentAttachedIE.IsInteractive) { return; }
 
-            if (!InteractiveElement.OutlineComponent.enabled && !InteractiveElement.AnInteractionIsProcessing) 
-            { 
-                InteractiveElement.OutlineComponent.enabled = true;
-                OnTriggerEnter?.Invoke();
-            }
+            bool displayInteractionFeedback = 
+                !ParentAttachedIE.OutlineComponent.enabled && !ParentAttachedIE.AnInteractionIsProcessing;
 
-            if(InteractiveElement.OutlineComponent.enabled && InteractiveElement.AnInteractionIsProcessing)
+            if (displayInteractionFeedback)
             {
-                InteractiveElement.OutlineComponent.enabled = false;
-                OnTriggerExit?.Invoke();
+                AddFoundTransform(other.transform);
+                return;
             }
-
-            SetPlayerInteractionDatas(other.transform, transform.parent, true);
         }
 
         #region Add method - OnTriggerEnter
@@ -38,19 +33,15 @@ namespace Khynan_Coding
         {
             base.AddFoundTransform(other);
 
-            if (!InteractiveElement.IsInteractive || InteractiveElement.IEType == IEType.WithStats) { return; }
+            if (!ParentAttachedIE.IsInteractive || ParentAttachedIE.IsItTargetedByPlayer) { return; }
 
             SetPlayerInteractionDatas(other, transform.parent, true);
 
-            if (InteractiveElement.IsItTargetedByPlayer)
-            {
-                OnTriggerExit?.Invoke();
-                return;
-            }
+            if (ParentAttachedIE.IsItTargetedByPlayer) { return; }
 
-            if (!InteractiveElement.OutlineComponent.enabled)
+            if (!ParentAttachedIE.OutlineComponent.enabled)
             {
-                InteractiveElement.OutlineComponent.enabled = true;
+                ParentAttachedIE.OutlineComponent.enabled = true;
             }
 
             OnTriggerEnter?.Invoke();
@@ -58,15 +49,15 @@ namespace Khynan_Coding
         #endregion
 
         #region Remove methods - OnTriggerExit & Dead Flag
-        protected override void RemoveATransformFromTheList(Transform other)
+        public override void RemoveATransformFromTheList(Transform other)
         {
             base.RemoveATransformFromTheList(other);
 
-            if (!InteractiveElement.IsInteractive || InteractiveElement.IEType == IEType.WithStats) { return; }
+            if (!ParentAttachedIE.IsInteractive) { return; }
 
             SetPlayerInteractionDatas(other, null, false);
 
-            InteractiveElement.OutlineComponent.enabled = false;
+            ParentAttachedIE.OutlineComponent.enabled = false;
             OnTriggerExit?.Invoke();
         }
         #endregion
